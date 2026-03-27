@@ -125,3 +125,37 @@ button.menu-btn {
   margin-left: auto; /* 件数を右端に寄せる */
   padding-right: 10px;
 }
+
+.search-container {
+  position: relative;
+  flex: 1;
+  max-width: 400px;
+  margin: 0 20px;
+}
+
+.search-input {
+  width: 50%;
+  padding: 8px 35px 8px 12px;
+  border-radius: 20px; /* 丸みをつけて検索窓らしく */
+  border: 1px solid #ddd;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.search-input:focus {
+  border-color: #1a73e8;
+  box-shadow: 0 0 5px rgba(26, 115, 232, 0.2);
+}
+
+.search-clear {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 1.2rem;
+  cursor: pointer;
+}

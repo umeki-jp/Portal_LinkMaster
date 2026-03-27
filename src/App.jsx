@@ -23,6 +23,8 @@ function App() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedLink, setSelectedLink] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  
 
   // --- 処理ロジック ---
 
@@ -88,12 +90,34 @@ function App() {
     setIsDetailOpen(true);
   };
 
-  const favoriteLinks = links.filter(link => link.isFavorite);
+  const filteredLinks = links.filter(link => {
+    const query = searchQuery.toLowerCase();
+    return (
+      link.title.toLowerCase().includes(query) ||
+      (link.shortMemo || "").toLowerCase().includes(query) ||
+      (link.tags && link.tags.some(tag => tag.toLowerCase().includes(query)))
+    );
+  });
+
+  const favoriteLinks = filteredLinks.filter(link => link.isFavorite);
 
   return (
     <div className="app-container">
       <header className="app-header">
         <h1>🌏リンクマスター</h1>
+        {/* 検索窓を追加 */}
+        <div className="search-container">
+          <input 
+            type="text" 
+            placeholder="名称、メモ、タグで検索..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="search-input"
+          />
+          {searchQuery && (
+            <button className="search-clear" onClick={() => setSearchQuery("")}>×</button>
+          )}
+        </div>
         <div className="header-actions">
           <button className="menu-btn" onClick={() => setIsMenuOpen(true)}>メニュー</button>
           <button className="add-btn" onClick={() => { setSelectedLink(null); setIsFormOpen(true); }}>
@@ -121,7 +145,7 @@ function App() {
         )}
 
         {CATEGORIES.sort((a, b) => a.order - b.order).map(category => {
-          const categoryLinks = links
+          const categoryLinks = filteredLinks
             .filter(link => link.categoryId === category.id)
             .sort((a, b) => a.order - b.order);
 
