@@ -2,11 +2,11 @@
 .link-row {
   display: flex;
   align-items: center;
-  height: 50px; /* ★【追加】1行の縦幅を固定 */
+  height: 38px; /* ★【追加】1行の縦幅を固定 */
   padding: 0 15px; /* 上下のpaddingを0にして縦幅を安定させる */
   background-color: #fff;
   border-bottom: 1px solid #eee; /* 行間の区切り線 */
-  transition: background-color 0.2s;
+  transition: background-color 0.15s;
   gap: 15px; /* 列間の余白 */
   box-sizing: border-box; /* パディングを含めた高さ計算 */
   width: 100%;
@@ -36,7 +36,7 @@
 
 .link-title {
   margin: 0;
-  font-size: 1rem;
+  font-size: 0.9rem;
   white-space: nowrap; /* 折り返しを防ぐ */
   overflow: hidden;
   text-overflow: ellipsis; /* 溢れたら「...」にする */
@@ -53,13 +53,17 @@
 
 /* 列2: 簡易メモ（35%） */
 .col-memo {
-  flex: 0 0 35%;
-  overflow: hidden; /* はみ出し対策 */
+  flex: 3;
+  color: #666;
+  font-size: 0.8rem; /* ★ 0.85remから縮小 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .short-memo {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   color: #666;
   white-space: nowrap; /* ★【追加】絶対に1行にする */
   overflow: hidden; /* ★【追加】はみ出したら隠す */
@@ -72,7 +76,7 @@
   overflow: hidden; /* ★【追加】はみ出し対策 */
 }
 
-/* ★【追加】タグ専用のコンテナ */
+/* タグ専用のコンテナ */
 .tags-container {
   display: flex;
   gap: 5px;
@@ -92,7 +96,7 @@
 .browser-badge {
   background-color: #f0f0f0;
   color: #555;
-  padding: 2px 6px;
+  padding: 1px 5px;
   border-radius: 4px;
   font-size: 0.7rem;
   font-weight: bold;
@@ -101,7 +105,7 @@
 .tag-badge {
   background-color: #e3f2fd;
   color: #1976d2;
-  padding: 2px 6px;
+  padding: 1px 5px;
   border-radius: 4px;
   font-size: 0.7rem;
   white-space: nowrap; /* ★【追加】タグ内の文字も折り返さない */
@@ -109,11 +113,12 @@
 
 .fav-star {
   color: #ffb300;
+  font-size: 0.9rem;
   font-weight: bold;
 }
 
 .action-btn {
-  padding: 4px 8px;
+  padding: 2px 4px;
   font-size: 0.8rem;
   cursor: pointer;
   border: 1px solid #ccc;

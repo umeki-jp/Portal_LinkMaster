@@ -1,3 +1,28 @@
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: #fff;
+  /* 既存のpaddingなどはそのまま */
+}
+/* ヘッダーの縦幅を狭く */
+.app-header {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+.app-header h1 {
+  margin-top: 0.2em;
+  margin-bottom: 0.2em;
+  font-size: 1.5rem;
+}
+.header-actions {
+  margin-top: 0.2em;
+  margin-bottom: 0.2em;
+}
+/* h1（タイトル）を小さく */
+.app-header h1 {
+  font-size: 1.5rem;
+}
 .app-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -24,7 +49,7 @@
 }
 
 .category-title {
-  font-size: 1.2rem;
+  font-size: 1rem;
   border-left: 5px solid #1a73e8;
   padding-left: 10px;
   margin-bottom: 20px;
@@ -67,4 +92,36 @@ button.menu-btn {
   padding: 8px 16px;
   border-radius: 4px;
   cursor: pointer;
+}
+
+/* アコーディオンヘッダーのスタイル */
+.accordion-header {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+  padding: 4px 8px; /* 上下パディングをさらに小さく */
+  margin-top: 10px; /* カテゴリ間の余白 */
+  background-color: #f8f9fa; /* 閉じた時も境目がわかりやすいように薄く色付け */
+}
+
+.accordion-header:hover {
+  background-color: #f0f4f8;
+}
+
+.accordion-header .arrow {
+  display: inline-block;
+  width: 1.5rem;
+  font-size: 0.8rem;
+  color: #666;
+  text-align: center;
+}
+
+.accordion-header .count {
+  font-size: 0.9rem;
+  color: #999;
+  font-weight: normal;
+  margin-left: auto; /* 件数を右端に寄せる */
+  padding-right: 10px;
 }

@@ -26,6 +26,19 @@ function App() {
 
   // --- 処理ロジック ---
 
+  const [openCategories, setOpenCategories] = useState(
+    CATEGORIES.map(c => c.id) // 最初は全部開いた状態にする
+  );
+
+  // ★ ここに追加！ カテゴリの開閉を切り替える関数
+  const toggleCategory = (categoryId) => {
+    setOpenCategories(prev => 
+      prev.includes(categoryId) 
+        ? prev.filter(id => id !== categoryId) // あれば消す（閉じる）
+        : [...prev, categoryId]               // なければ足す（開く）
+    );
+  };
+
   // インポート処理（MenuModal用）
   const handleImportData = (importedLinks) => {
     // 必要に応じて重複チェックやマージ処理を追加可能
@@ -99,8 +112,8 @@ function App() {
                   key={link.id} 
                   link={link} 
                   onDetailClick={handleDetailClick}
-                  onEditClick={() => handleEditClick(link)} // ★追加
-                  onDeleteClick={() => handleDeleteLink(link.id)} // ★追加
+                  onEditClick={() => handleEditClick(link)} 
+                  onDeleteClick={() => handleDeleteLink(link.id)} 
                 />
               ))}
             </div>
@@ -114,20 +127,34 @@ function App() {
 
           if (categoryLinks.length === 0) return null;
 
+          const isOpen = openCategories.includes(category.id);
+
           return (
             <section key={category.id} className="category-section">
-              <h2 className="category-title">{category.name}</h2>
-              <div className="link-grid">
-                {categoryLinks.map(link => (
-                  <LinkCard 
-                    key={link.id} 
-                    link={link} 
-                    onDetailClick={handleDetailClick}
-                    onEditClick={() => handleEditClick(link)}
-                    onDeleteClick={() => handleDeleteLink(link.id)}
-                  />
-                ))}
-              </div>
+              {/* ★タイトルをクリック可能にし、アイコンと件数を表示 */}
+              <h2 
+                className={`category-title accordion-header ${isOpen ? 'is-open' : ''}`} 
+                onClick={() => toggleCategory(category.id)}
+              >
+                <span className="arrow">{isOpen ? '▼' : '▶'}</span>
+                {category.name}
+                <span className="count">({categoryLinks.length})</span>
+              </h2>
+              
+              {/* ★isOpen が true の時だけリストを表示 */}
+              {isOpen && (
+                <div className="link-grid">
+                  {categoryLinks.map(link => (
+                    <LinkCard 
+                      key={link.id} 
+                      link={link} 
+                      onDetailClick={handleDetailClick}
+                      onEditClick={() => handleEditClick(link)}
+                      onDeleteClick={() => handleDeleteLink(link.id)}
+                    />
+                  ))}
+                </div>
+              )}
             </section>
           );
         })}
