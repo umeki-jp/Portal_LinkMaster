@@ -12,7 +12,9 @@
 }
 
 .app-main {
-  flex: 1; 
+  flex: 1;
+  padding-top: 78px;
+  padding-bottom: 90px; /* 固定フッターに隠れないように余白を確保 */
 }
 
 /* --- ヘッダー（固定＆スリム化の完全版） --- */
@@ -51,7 +53,8 @@
 
 /* --- アプリメインコンテンツ --- */
 .app-main {
-  padding-top: 78px; /* 必要なら 72〜90px で微調整 */
+  flex: 1;
+  padding-top: 78px;
 }
 
 .category-section {
@@ -176,10 +179,19 @@ button.menu-btn {
 
 /* --- フッターのスタイル --- */
 .app-footer {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+
+  width: min(1200px, calc(100% - 40px)); /* containerの左右20pxに合わせる */
+  box-sizing: border-box;
+
   background-color: #f8f9fa;
   border-top: 1px solid #eee;
-  padding: 20px 10px;
-  margin-top: 40px; /* メインコンテンツとの隙間 */
+  padding: 12px 10px;
+  margin-top: 0;
 }
 
 /* 3つの要素を並べるコンテナ */
@@ -189,8 +201,8 @@ button.menu-btn {
   display: flex;
   justify-content: center; /* 全体を中央寄せ */
   align-items: center;     /* 縦の高さを揃える */
-  flex-wrap: wrap;         /* ★画面が狭い時に自動で折り返す（2段になる） */
-  gap: 10px 30px;          /* ★要素間の隙間（縦10px、横30px） */
+  flex-wrap: wrap;         /* 画面が狭い時に自動で折り返す（2段になる） */
+  gap: 10px 30px;
 }
 
 /* リンクのスタイル */
@@ -213,4 +225,11 @@ button.menu-btn {
   font-size: 0.8rem;
   color: #999;
   white-space: nowrap;
+}
+
+/* 狭い画面ではフッターが2段になりやすいので本文下余白を少し増やす */
+@media (max-width: 700px) {
+  .app-main {
+    padding-bottom: 120px;
+  }
 }
