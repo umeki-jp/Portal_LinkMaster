@@ -11,6 +11,10 @@
   box-sizing: border-box;
 }
 
+.app-main {
+  flex: 1; 
+}
+
 /* --- ヘッダー（固定＆スリム化の完全版） --- */
 .app-header {
   position: fixed;
