@@ -80,7 +80,7 @@ function App() {
   return (
     <div className="app-container">
       <header className="app-header">
-        <h1>Portal_LinkMaster</h1>
+        <h1>🌏リンクマスター</h1>
         <div className="header-actions">
           <button className="menu-btn" onClick={() => setIsMenuOpen(true)}>メニュー</button>
           <button className="add-btn" onClick={() => { setSelectedLink(null); setIsFormOpen(true); }}>
