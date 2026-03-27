@@ -5,10 +5,11 @@ export const CATEGORIES = [
   { id: "3", name: "サービス（業務）", order: 30 },
   { id: "4", name: "サービス（個人）", order: 40 },
   { id: "5", name: "サイト（自社）", order: 50 },
-  { id: "6", name: "サイト（業務）", order: 60 },
-  { id: "7", name: "サイト（有効）", order: 70 },
-  { id: "8", name: "サイト（取引先）", order: 80 },
-  { id: "9", name: "サイト（一時）", order: 90 }
+  { id: "6", name: "サイト（取引先）", order: 60 },
+  { id: "7", name: "サイト（検索）", order: 70 },
+  { id: "8", name: "サイト（業務）", order: 80 },
+  { id: "9", name: "サイト（勉強）", order: 90 },
+  { id: "10", name: "その他", order: 100 }
 ];
 
 // 初期ダミーデータ

@@ -32,7 +32,7 @@ function App() {
     CATEGORIES.map(c => c.id) // 最初は全部開いた状態にする
   );
 
-  // ★ ここに追加！ カテゴリの開閉を切り替える関数
+  //  カテゴリの開閉を切り替える関数
   const toggleCategory = (categoryId) => {
     setOpenCategories(prev => 
       prev.includes(categoryId) 
@@ -49,7 +49,7 @@ function App() {
 
   // 新規・編集の保存ボタンが押された時
   const handleSaveLink = (data) => {
-    // 【追加】重複チェック（編集時は自分自身を除外して判定）
+    // 重複チェック（編集時は自分自身を除外して判定）
     const isDuplicate = links.some(link => 
       link.url === data.url && link.id !== (selectedLink?.id || null)
     );
@@ -104,7 +104,7 @@ function App() {
   return (
     <div className="app-container">
       <header className="app-header">
-        <h1>🌏リンクマスター</h1>
+        <h1>🌏Link-Master</h1>
         {/* 検索窓を追加 */}
         <div className="search-container">
           <input 
@@ -206,7 +206,7 @@ function App() {
         />
       </Modal>
 
-      {/* ★メニュー用モーダルを追加 */}
+      {/* メニュー用モーダルを追加 */}
       <Modal isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} title="システムメニュー">
         <MenuModal links={links} onImport={handleImportData} />
       </Modal>

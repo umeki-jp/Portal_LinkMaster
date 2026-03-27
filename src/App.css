@@ -45,18 +45,29 @@
 }
 
 .category-section {
-  margin-bottom: 40px;
+  margin-bottom: 10px;
 }
 
 .category-title {
   font-size: 1rem;
   border-left: 5px solid #1a73e8;
-  padding-left: 10px;
-  margin-bottom: 20px;
+  padding: 4px 8px 4px 10px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .favorite-section .category-title {
   border-left-color: #ffb300;
+  background-color: #FFFFEF;
+  min-height: 32px;
+  padding: 0 8px 0 10px;
+  display: flex;
+  align-items: center;
+  line-height: 1.2;
+
 }
 
 .link-grid {
@@ -103,11 +114,11 @@ button.menu-btn {
   user-select: none;
   padding: 4px 8px; /* 上下パディングをさらに小さく */
   margin-top: 10px; /* カテゴリ間の余白 */
-  background-color: #f8f9fa; /* 閉じた時も境目がわかりやすいように薄く色付け */
+  background-color: #e3f2fd; /* 閉じた時も境目がわかりやすいように薄く色付け */
 }
 
 .accordion-header:hover {
-  background-color: #f0f4f8;
+  background-color: #d0ebff;
 }
 
 .accordion-header .arrow {
@@ -134,7 +145,8 @@ button.menu-btn {
 }
 
 .search-input {
-  width: 50%;
+  width: 100%;
+  box-sizing: border-box;
   padding: 8px 35px 8px 12px;
   border-radius: 20px; /* 丸みをつけて検索窓らしく */
   border: 1px solid #ddd;

@@ -125,7 +125,7 @@ function LinkFormModal({ isOpen, onSubmit, initialData = null }) {
 
             <div className="form-group">
                 <label>タグ（カンマ区切りで最大3つ推奨）</label>
-                <input type="text" name="tags" value={formData.tags} onChange={handleChange} maxLength="30" placeholder="毎日, 重要, 共有" />
+                <input type="text" name="tags" value={formData.tags} onChange={handleChange} maxLength="30" placeholder="毎日, 重要, 経理" />
             </div>
 
             <div className="form-checkbox-group">
