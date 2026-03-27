@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import './LinkFormModal.css';
 import { CATEGORIES } from '../../data/mockData';
 
-function LinkFormModal({ isOpen, onSubmit, initialData = null }) {
+function LinkFormModal({ isOpen, onSubmit, initialData, categories }) {
     // フォームの入力項目を管理するステート
     const [formData, setFormData] = useState({
         title: '',
@@ -96,9 +96,11 @@ function LinkFormModal({ isOpen, onSubmit, initialData = null }) {
                 <div className="form-group">
                     <label>カテゴリ</label>
                     <select name="categoryId" value={formData.categoryId} onChange={handleChange}>
-                        {CATEGORIES.map(cat => (
-                            <option key={cat.id} value={cat.id}>{cat.name}</option>
-                        ))}
+                    {categories.map((cat, index) => (
+                        <option key={cat.id} value={cat.id}>
+                        {index + 1}: {cat.name}  {/* ★「1: システム（メイン）」のように表示 */}
+                        </option>
+                    ))}
                     </select>
                 </div>
                 <div className="form-group">

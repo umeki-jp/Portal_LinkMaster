@@ -18,6 +18,17 @@ function App() {
     localStorage.setItem('portal_links', JSON.stringify(links));
   }, [links]);
 
+  // 1. カテゴリデータの読み込み（初期化）
+  const [categories, setCategories] = useState(() => {
+    const saved = localStorage.getItem('portal_categories');
+    return saved ? JSON.parse(saved) : CATEGORIES; // 初回はmockDataの10枠を表示
+  });
+
+  // 2. カテゴリデータの自動保存
+  useEffect(() => {
+    localStorage.setItem('portal_categories', JSON.stringify(categories));
+  }, [categories]);
+
   // モーダル管理用のステート
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -42,9 +53,16 @@ function App() {
   };
 
   // インポート処理（MenuModal用）
-  const handleImportData = (importedLinks) => {
-    // 必要に応じて重複チェックやマージ処理を追加可能
+  const handleImportData = (importedLinks, importedCategories) => {
+    // リンクデータの復元
     setLinks(importedLinks);
+    
+    // ★カテゴリデータも入っていれば復元する
+    if (importedCategories) {
+      setCategories(importedCategories);
+    }
+    
+    setIsMenuOpen(false); // メニューを閉じる
   };
 
   // 新規・編集の保存ボタンが押された時
@@ -144,10 +162,10 @@ function App() {
           </section>
         )}
 
-        {CATEGORIES.sort((a, b) => a.order - b.order).map(category => {
+        {categories.sort((a, b) => a.order - b.order).map(category => {
           const categoryLinks = filteredLinks
             .filter(link => link.categoryId === category.id)
-            .sort((a, b) => a.order - b.order);
+            .sort((a, b) => Number(a.order) - Number(b.order));
 
           if (categoryLinks.length === 0) return null;
 
@@ -184,6 +202,16 @@ function App() {
         })}
       </main>
 
+      <footer className="app-footer">
+        <div className="footer-content">
+          <a href="#" className="footer-link">☕ 開発者を支援する（寄付）</a>
+          <a href="#" className="footer-link">運営者情報</a>
+          <span className="copyright">
+            &copy; {new Date().getFullYear()} U1344 /Portal_LinkMaster. All rights reserved.
+          </span>
+        </div>
+      </footer>
+
       {/* 詳細メモ用モーダル */}
       <Modal isOpen={isDetailOpen} onClose={() => setIsDetailOpen(false)} title="詳細メモ">
         {selectedLink && (
@@ -202,13 +230,19 @@ function App() {
         <LinkFormModal 
           isOpen={isFormOpen} 
           onSubmit={handleSaveLink} 
-          initialData={selectedLink} 
+          initialData={selectedLink}
+          categories={categories} 
         />
       </Modal>
 
       {/* メニュー用モーダルを追加 */}
       <Modal isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} title="システムメニュー">
-        <MenuModal links={links} onImport={handleImportData} />
+        <MenuModal 
+          links={links} 
+          onImport={handleImportData} 
+          categories={categories}       // カテゴリデータを渡す
+          setCategories={setCategories} // 更新用の関数を渡す
+        />
       </Modal>
     </div>
   );
