@@ -1,121 +1,166 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState, useEffect } from 'react';
+import './App.css';
+import { CATEGORIES, INITIAL_LINKS } from './data/mockData';
+import Modal from './components/common/Modal';
+import LinkCard from './components/LinkCard';
+import LinkFormModal from './components/modals/LinkFormModal';
+import MenuModal from './components/modals/MenuModal';
 
 function App() {
-  const [count, setCount] = useState(0)
+  // 1. データの読み込み（初期化）
+  const [links, setLinks] = useState(() => {
+    const saved = localStorage.getItem('portal_links');
+    return saved ? JSON.parse(saved) : INITIAL_LINKS; // 初回はサンプルを表示
+  });
+  
+  // 2. データの自動保存（linksが更新されるたびに実行）
+  useEffect(() => {
+    localStorage.setItem('portal_links', JSON.stringify(links));
+  }, [links]);
+
+  // モーダル管理用のステート
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedLink, setSelectedLink] = useState(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // --- 処理ロジック ---
+
+  // インポート処理（MenuModal用）
+  const handleImportData = (importedLinks) => {
+    // 必要に応じて重複チェックやマージ処理を追加可能
+    setLinks(importedLinks);
+  };
+
+  // 新規・編集の保存ボタンが押された時
+  const handleSaveLink = (data) => {
+    // 【追加】重複チェック（編集時は自分自身を除外して判定）
+    const isDuplicate = links.some(link => 
+      link.url === data.url && link.id !== (selectedLink?.id || null)
+    );
+
+    if (isDuplicate) {
+      if (!window.confirm('このURLは既に登録されています。重複して登録しますか？')) {
+        return; // キャンセルした場合は保存を中断
+      }
+    }
+
+    if (selectedLink && selectedLink.id) {
+      // 編集処理
+      setLinks(prev => prev.map(l => l.id === selectedLink.id ? { ...data, id: selectedLink.id } : l));
+    } else {
+      // 新規登録
+      const newLink = { ...data, id: Date.now().toString(), createdAt: new Date().toISOString() };
+      setLinks(prev => [...prev, newLink]);
+    }
+    setIsFormOpen(false);
+    setSelectedLink(null);
+  };
+
+  // 削除ボタンが押された時
+  const handleDeleteLink = (id) => {
+    if (window.confirm('このリンクを削除してもよろしいですか？')) {
+      setLinks(prev => prev.filter(l => l.id !== id));
+    }
+  };
+
+  // 編集ボタンが押された時
+  const handleEditClick = (link) => {
+    setSelectedLink(link);
+    setIsFormOpen(true);
+  };
+
+  const handleDetailClick = (link) => {
+    setSelectedLink(link);
+    setIsDetailOpen(true);
+  };
+
+  const favoriteLinks = links.filter(link => link.isFavorite);
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <div className="app-container">
+      <header className="app-header">
+        <h1>Portal_LinkMaster</h1>
+        <div className="header-actions">
+          <button className="menu-btn" onClick={() => setIsMenuOpen(true)}>メニュー</button>
+          <button className="add-btn" onClick={() => { setSelectedLink(null); setIsFormOpen(true); }}>
+            ＋ 新規リンク
+          </button>
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+      </header>
 
-      <div className="ticks"></div>
+      <main className="app-main">
+        {favoriteLinks.length > 0 && (
+          <section className="category-section favorite-section">
+            <h2 className="category-title">★ よく使う（お気に入り）</h2>
+            <div className="link-grid">
+              {favoriteLinks.map(link => (
+                <LinkCard 
+                  key={link.id} 
+                  link={link} 
+                  onDetailClick={handleDetailClick}
+                  onEditClick={() => handleEditClick(link)} // ★追加
+                  onDeleteClick={() => handleDeleteLink(link.id)} // ★追加
+                />
+              ))}
+            </div>
+          </section>
+        )}
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        {CATEGORIES.sort((a, b) => a.order - b.order).map(category => {
+          const categoryLinks = links
+            .filter(link => link.categoryId === category.id)
+            .sort((a, b) => a.order - b.order);
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+          if (categoryLinks.length === 0) return null;
+
+          return (
+            <section key={category.id} className="category-section">
+              <h2 className="category-title">{category.name}</h2>
+              <div className="link-grid">
+                {categoryLinks.map(link => (
+                  <LinkCard 
+                    key={link.id} 
+                    link={link} 
+                    onDetailClick={handleDetailClick}
+                    onEditClick={() => handleEditClick(link)}
+                    onDeleteClick={() => handleDeleteLink(link.id)}
+                  />
+                ))}
+              </div>
+            </section>
+          );
+        })}
+      </main>
+
+      {/* 詳細メモ用モーダル */}
+      <Modal isOpen={isDetailOpen} onClose={() => setIsDetailOpen(false)} title="詳細メモ">
+        {selectedLink && (
+          <div className="detail-memo-content">
+            <p style={{ whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>{selectedLink.detailMemo}</p>
+          </div>
+        )}
+      </Modal>
+
+      {/* 登録・編集用モーダル */}
+      <Modal 
+        isOpen={isFormOpen} 
+        onClose={() => setIsFormOpen(false)} 
+        title={selectedLink ? "リンクを編集" : "新規リンク登録"}
+      >
+        <LinkFormModal 
+          isOpen={isFormOpen} 
+          onSubmit={handleSaveLink} 
+          initialData={selectedLink} 
+        />
+      </Modal>
+
+      {/* ★メニュー用モーダルを追加 */}
+      <Modal isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} title="システムメニュー">
+        <MenuModal links={links} onImport={handleImportData} />
+      </Modal>
+    </div>
+  );
 }
 
-export default App
+export default App;

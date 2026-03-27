@@ -1,0 +1,65 @@
+.link-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.form-row {
+  display: flex;
+  gap: 15px;
+}
+
+.form-row .form-group {
+  flex: 1;
+}
+
+.link-form label {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.link-form input[type="text"],
+.link-form input[type="url"],
+.link-form select,
+.link-form textarea {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.form-checkbox-group {
+  display: flex;
+  gap: 20px;
+  padding: 10px 0;
+}
+
+.form-checkbox-group label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: normal;
+  cursor: pointer;
+}
+
+.save-btn {
+  background-color: #1a73e8;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  width: 100%;
+}
+
+.save-btn:hover {
+  background-color: #1557b0;
+}
