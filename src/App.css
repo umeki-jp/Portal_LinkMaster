@@ -4,6 +4,11 @@
   margin: 0 auto;
   padding: 20px;
   font-family: sans-serif;
+
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  box-sizing: border-box;
 }
 
 /* --- ヘッダー（固定＆スリム化の完全版） --- */
