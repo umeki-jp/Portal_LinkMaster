@@ -24,6 +24,18 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+.modal-content.menu-modal-content {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modal-content.menu-modal-content .modal-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
 /* タイトルと閉じるボタンの並び */
 .modal-header {
   display: flex;

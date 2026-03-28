@@ -226,6 +226,7 @@ function App() {
         isOpen={isFormOpen} 
         onClose={() => setIsFormOpen(false)} 
         title={selectedLink ? "リンクを編集" : "新規リンク登録"}
+        contentClassName="menu-modal-content"
       >
         <LinkFormModal 
           isOpen={isFormOpen} 
@@ -236,7 +237,12 @@ function App() {
       </Modal>
 
       {/* メニュー用モーダルを追加 */}
-      <Modal isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} title="システムメニュー">
+      <Modal
+        isOpen={isMenuOpen}
+        onClose={() => setIsMenuOpen(false)}
+        title="システムメニュー"
+        contentClassName="menu-modal-content"
+      >
         <MenuModal 
           links={links} 
           onImport={handleImportData} 

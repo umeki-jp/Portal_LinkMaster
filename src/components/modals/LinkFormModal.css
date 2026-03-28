@@ -10,6 +10,27 @@
   gap: 5px;
 }
 
+.order-inline-group {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.order-inline-group label {
+  margin: 0;
+  white-space: nowrap;
+}
+
+.order-input {
+  width: 100px;
+}
+
+.order-note {
+  font-size: 0.85rem;
+  color: #666;
+  white-space: nowrap;
+}
+
 .form-row {
   display: flex;
   gap: 15px;

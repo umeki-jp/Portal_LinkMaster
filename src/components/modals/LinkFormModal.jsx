@@ -141,6 +141,20 @@ function LinkFormModal({ isOpen, onSubmit, initialData, categories }) {
                 </label>
             </div>
 
+            <div className="form-group order-inline-group">
+                <label htmlFor="order">表示順</label>
+                <input
+                    id="order"
+                    className="order-input"
+                    type="number"
+                    name="order"
+                    value={formData.order}
+                    onChange={handleChange}
+                    placeholder="例: 10, 20, 30..."
+                />
+                <span className="order-note">※数字が小さいほど上に表示</span>
+            </div>
+
             <div className="form-actions">
                 <button type="submit" className="save-btn">保存する</button>
             </div>

@@ -1,4 +1,5 @@
 import './MenuModal.css';
+import { USAGE_STEPS, USAGE_NOTES } from '../../data/usageGuide';
 
 function MenuModal({ links, onImport, categories, setCategories }) {
   // エクスポート：JSONファイルとしてダウンロード
@@ -95,6 +96,24 @@ function MenuModal({ links, onImport, categories, setCategories }) {
           JSONインポート
           <input type="file" accept=".json" onChange={handleImport} style={{ display: 'none' }} />
         </label>
+      </section>
+
+      <section className="menu-section">
+        <h3>使用方法</h3>
+        <ul className="usage-list">
+          {USAGE_STEPS.map((step) => (
+            <li key={step.text}><span className="usage-prefix">{step.prefix}</span>{step.text}</li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="menu-section">
+        <h3>注意事項</h3>
+        <ul className="usage-list usage-notes">
+          {USAGE_NOTES.map((note) => (
+            <li key={note.text}><span className="usage-prefix">{note.prefix}</span>{note.text}</li>
+          ))}
+        </ul>
       </section>
 
       <section className="menu-section">
