@@ -204,8 +204,8 @@ function App() {
 
       <footer className="app-footer">
         <div className="footer-content">
-          <a href="#" className="footer-link">☕ 開発者を支援する（寄付）</a>
-          <a href="#" className="footer-link">運営者情報</a>
+          <a href="https://buymeacoffee.com/u1344" target="_blank" rel="noopener noreferrer" className="footer-link">☕ 開発者を支援する（寄付）</a>
+          <a href="https://github.com/umeki-jp" target="_blank" rel="noopener noreferrer" className="footer-link">運営者情報</a>
           <span className="copyright">
             &copy; {new Date().getFullYear()} U1344 /Portal_LinkMaster. All rights reserved.
           </span>

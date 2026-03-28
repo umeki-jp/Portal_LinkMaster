@@ -34,7 +34,9 @@
 
 ## ☕ 開発者を支援する
 もしこのツールが役に立ちましたら、開発の継続と将来のクラウド版実装に向けたご支援をいただけますと幸いです。
-[ここにBuy Me a Coffeeや寄付サイトのリンクURLを記載]
+<a href="https://buymeacoffee.com/u1344" target="_blank">
+  <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" >
+</a>
 
 ## ©️ Copyright
 © 2026 U1344 / Portal_LinkMaster. All rights reserved.
