@@ -1,16 +1,40 @@
-# React + Vite
+# Portal_LinkMaster 🌏
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+ブラウザ上で完結する、超高速・軽量な個人用リンク管理ポータルアプリです。
+データベースやサーバーの構築は不要。開いてすぐに自分だけのリンク集を構築・整理できます。
 
-Currently, two official plugins are available:
+## ✨ 主な機能
+- **カテゴリ管理:** 最大10枠のカテゴリを自由にリネームしてリンクを分類。
+- **柔軟な並び替え:** 表示順（order）の数値を設定することで、リストを思い通りに並び替え可能。
+- **お気に入り＆強調表示:** よく使うリンクを画面上部に固定。
+- **メモ機能:** 常に見えるように簡易メモを入力、手順など業務引継ぎ用には詳細メモを入力。
+- **インクリメンタル検索:** タイトル、メモ、タグから瞬時にリンクを絞り込み。
+- **ポータブル設計:** 設定やリンクデータはJSONファイルとしてエクスポート・インポートが可能なため、ブラウザごとに共通のリンクが使用できます。また、業務引継ぎや新入社員用に共通リンクデータを取り込むことで、初期設定が瞬時に可能です。
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🚀 使い方
 
-## React Compiler
+1. トップ画面の「+新規リンク」からリンクを追加します。
+2. カテゴリや表示順を調整して、見やすい順番に整理します。
+3. 必要に応じて「お気に入り」や「強調」を設定します。
+4. **【重要】** データ保全のため、定期的にメニューから「JSONエクスポート」を実行してください。
+5. 別PCへ移行する場合は、出力したJSONファイルを「インポート」することで瞬時に復元できます。
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## ⚠️ 重要な注意事項（必ずお読みください）
 
-## Expanding the ESLint configuration
+- **パスワード等の入力禁止:** メモ欄にはパスワードをはじめとする機密性の高いアカウント情報は絶対に入力しないでください。
+- **データ保存の仕様:** 本アプリのデータは、お使いのブラウザの「ローカルストレージ」に保存されます。**ブラウザのキャッシュ削除やサイトデータの消去を行うと、登録したデータがすべて消去される場合があります。**
+- **バックアップの推奨:** 上記の仕様上、定期的にシステムメニューから「JSONエクスポート」を行い、バックアップを取ることを強く推奨します。
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 🗺️ 今後のロードマップ
+現在のバージョンは、完全無料で動作するブラウザスタンドアローン版（MVP）です。
+今後の反響やご要望に応じて、以下の拡張機能（有料版アドオン等）の実装を検討しています。
+
+- クラウドデータベース（BaaS）との連携によるデータ永続化
+- アカウント登録および複数端末（PC・スマホ）間でのリアルタイム同期機能
+
+## ☕ 開発者を支援する
+もしこのツールが役に立ちましたら、開発の継続と将来のクラウド版実装に向けたご支援をいただけますと幸いです。
+[ここにBuy Me a Coffeeや寄付サイトのリンクURLを記載]
+
+## ©️ Copyright
+© 2026 U1344 / Portal_LinkMaster. All rights reserved.
