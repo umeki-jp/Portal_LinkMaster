@@ -1,0 +1,16 @@
+{
+  "name": "Portal_LinkMaster",
+  "short_name": "LinkMaster",
+  "description": "ブラウザ完結の超高速・軽量な個人用リンク管理ポータル",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#e40000",
+  "background_color": "#1a1a1a",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
