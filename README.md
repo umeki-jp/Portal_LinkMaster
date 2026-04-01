@@ -39,4 +39,4 @@
 </a>
 
 ## ©️ Copyright
-© 2026 U1344 / Portal_LinkMaster. All rights reserved.
+© 2026 Umeki / Portal_LinkMaster. All rights reserved.
