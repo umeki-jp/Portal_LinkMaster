@@ -122,7 +122,7 @@ function App() {
   return (
     <div className="app-container">
       <header className="app-header">
-        <h1>🌏Link-Master</h1>
+        <h1>Link Master</h1>
         {/* 検索窓を追加 */}
         <div className="search-container">
           <input 
@@ -206,7 +206,7 @@ function App() {
         <div className="footer-content">
           <a href="https://umeki-hub.vercel.app/" target="_blank" rel="noopener noreferrer" className="footer-link">総合サイト</a>
           <span className="copyright">
-            &copy; {new Date().getFullYear()} Umeki/Portal_LinkMaster. All rights reserved.
+            &copy; {new Date().getFullYear()} Umeki / LinkMaster. All rights reserved.
           </span>
         </div>
       </footer>

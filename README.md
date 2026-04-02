@@ -1,4 +1,4 @@
-# Portal_LinkMaster 🌏
+# LinkMaster 🌏
 
 ブラウザ上で完結する、超高速・軽量な個人用リンク管理ポータルアプリです。
 データベースやサーバーの構築は不要。開いてすぐに自分だけのリンク集を構築・整理できます。
@@ -39,4 +39,4 @@
 </a>
 
 ## ©️ Copyright
-© 2026 Umeki / Portal_LinkMaster. All rights reserved.
+© 2026 Umeki / LinkMaster. All rights reserved.
