@@ -1,12 +1,68 @@
-.menu-container {
+/* =========================================
+   基本レイアウト (サイドバー + コンテンツ)
+   ========================================= */
+.menu-modal-layout {
+  display: flex;
+  height: 800px;
+  width: 900px;
+  max-width: 95vw;
+  gap: 20px;
+}
+
+/* 左側：サイドバー */
+.menu-sidebar {
+  flex: 0 0 160px; /* サイドバーの幅を固定 */
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  border-right: 1px solid #eee;
+  padding-right: 15px;
+}
+
+.menu-tab-btn {
+  text-align: left;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: #555;
+  transition: all 0.2s;
+}
+
+.menu-tab-btn:hover {
+  background-color: #f0f0f0;
+}
+
+.menu-tab-btn.active {
+  background-color: #e3f2fd;
+  color: #1a73e8;
+  font-weight: bold;
+}
+
+/* 右側：コンテンツエリア */
+.menu-content-area {
+  flex: 1;
+  overflow-y: auto; /* コンテンツが長い場合はここだけスクロール */
+  padding-right: 10px;
+}
+
+.menu-tab-pane {
   display: flex;
   flex-direction: column;
   gap: 25px;
 }
 
+/* =========================================
+   各セクション・部品のデザイン
+   ========================================= */
 .menu-section {
   padding-bottom: 15px;
   border-bottom: 1px solid #eee;
+}
+.menu-section:last-child {
+  border-bottom: none;
 }
 
 .menu-section h3 {
@@ -21,6 +77,54 @@
   margin-bottom: 15px;
 }
 
+.hint-text {
+  font-size: 0.8rem !important;
+  color: #888 !important;
+  margin-top: 10px;
+}
+
+.account-status {
+  display: inline-block;
+  padding: 6px 12px;
+  background-color: #f5f5f5;
+  border-radius: 20px;
+  border: 1px solid #ddd;
+  font-weight: bold;
+}
+
+/* 設定の行 */
+.setting-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 0.9rem;
+}
+
+.toggle-btn {
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+}
+
+/* ポリシーリンク群 */
+.policy-links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.policy-links a {
+  color: #1a73e8;
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+.policy-links a:hover {
+  text-decoration: underline;
+}
+
+/* アクションボタン */
 .menu-action-btn {
   display: inline-block;
   padding: 10px 20px;
@@ -31,47 +135,93 @@
   border: 1px solid #ccc;
   background: #f8f9fa;
   transition: 0.2s;
+  color: #333;
 }
-
-.menu-action-btn:hover {
-  background: #e9ecef;
-}
+.menu-action-btn:hover { background: #e9ecef; }
 
 .menu-action-btn.export {
   background-color: #28a745;
   color: white;
   border: none;
 }
+.menu-action-btn.export:hover { background-color: #218838; }
 
-.menu-action-btn.export:hover {
-  background-color: #218838;
+/* 使い方リスト */
+.usage-list { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; }
+.usage-list li { color: #444; font-size: 0.9rem; line-height: 1.5; list-style: none; display: flex; gap: 8px; }
+.usage-prefix { flex-shrink: 0; color: #555; }
+.usage-notes .usage-prefix { color: #e40000; }
+
+/* ふわっと表示されるアニメーション */
+.animate-fade-in { animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+/* =========================================
+   スマホ対応 (横幅が狭い時)
+   ========================================= */
+@media (max-width: 600px) {
+  .menu-modal-layout {
+    flex-direction: column; /* 縦積みに変更 */
+  }
+  .menu-sidebar {
+    flex: none;
+    flex-direction: row; /* タブを横並びに */
+    border-right: none;
+    border-bottom: 2px solid #eee;
+    padding-right: 0;
+    padding-bottom: 10px;
+    overflow-x: auto; /* はみ出たらスクロール */
+    white-space: nowrap;
+  }
+  .menu-tab-btn {
+    text-align: center;
+    border-radius: 8px 8px 0 0;
+  }
+  .menu-content-area {
+    padding-right: 0;
+  }
 }
 
-.usage-list {
-  margin: 0;
-  padding-left: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+/* =========================================
+   ダークモード対応
+   ========================================= */
+.dark-mode .menu-sidebar { border-color: #333; }
+.dark-mode .menu-tab-btn { color: #aaa; }
+.dark-mode .menu-tab-btn:hover { background-color: #333; }
+.dark-mode .menu-tab-btn.active { background-color: #333; color: #64b5f6; }
+.dark-mode .menu-section { border-color: #333; }
+.dark-mode .menu-section h3 { color: #ddd; }
+.dark-mode .menu-section p { color: #aaa; }
+.dark-mode .account-status { background-color: #222; border-color: #444; color: #ddd; }
+.dark-mode .toggle-btn { background-color: #333; border-color: #555; color: #ddd; }
+.dark-mode .policy-links a { color: #64b5f6; }
+.dark-mode .menu-action-btn { background-color: #333; border-color: #555; color: #ddd; }
+.dark-mode .menu-action-btn:hover { background-color: #444; }
+.dark-mode .usage-list li { color: #ccc; }
+.dark-mode .usage-prefix { color: #888; }
+.dark-mode .category-edit-list input { background-color: #222; border-color: #444; color: #ddd; }
+
+.dark-mode .modal-content {
+  background-color: #1e1e1e;
+  color: #e0e0e0;
+  border: 1px solid #333;
 }
 
-.usage-list li {
-  color: #444;
-  font-size: 0.9rem;
-  line-height: 1.5;
+/* モーダルのタイトル部分（もしあれば） */
+.dark-mode .modal-header {
+  border-bottom-color: #333;
 }
 
-.usage-list li {
-  list-style: none;
-  display: flex;
-  gap: 8px;
+.dark-mode .modal-header h2 {
+  color: #ddd;
 }
 
-.usage-prefix {
-  flex-shrink: 0;
-  color: #555;
+/* 右上の閉じるボタン（×） */
+.dark-mode .close-btn {
+  color: #aaa;
 }
 
-.usage-notes .usage-prefix {
-  color: #e67e00;
+.dark-mode .close-btn:hover {
+  color: #fff;
+  background-color: #333;
 }

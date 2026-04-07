@@ -137,3 +137,69 @@
   background-color: #f8f9fa;
   border-color: #ddd;
 }
+
+/* =========================================
+   ★ 追加: ダークモード対応 (画面が暗い時の上書きスタイル)
+   ========================================= */
+
+/* 行全体の背景と線 */
+.dark-mode .link-row {
+  background-color: #1e1e1e;
+  border-bottom-color: #333;
+}
+
+/* ホバー時（マウスを乗せた時） */
+.dark-mode .link-row:hover {
+  background-color: #2a2a2a;
+}
+
+/* 強調フラグがある行 */
+.dark-mode .link-row.highlighted {
+  background-color: #3a260a; /* 暗いオレンジブラウン系 */
+  border-left-color: #ffb300;
+}
+
+/* リンクタイトル */
+.dark-mode .link-title a {
+  color: #e3f2fd; /* 暗い背景に映える水色 */
+}
+.dark-mode .link-title a:hover {
+  color: #bbdefb;
+}
+
+/* メモテキスト */
+.dark-mode .col-memo,
+.dark-mode .short-memo {
+  color: #aaa;
+}
+
+/* ブラウザバッジ */
+.dark-mode .browser-badge {
+  background-color: #333;
+  color: #ddd;
+}
+
+/* タグバッジ */
+.dark-mode .tag-badge {
+  background-color: #102a43; /* 深い青背景 */
+  color: #e3f2fd;
+}
+
+/* 各種アクションボタン */
+.dark-mode .action-btn {
+  background-color: transparent;
+  border-color: #555;
+  color: #ccc;
+}
+
+.dark-mode .action-btn:hover {
+  background-color: #333;
+  color: #fff;
+  border-color: #777;
+}
+
+/* 詳細ボタンだけ少し色を変える */
+.dark-mode .action-btn.detail {
+  background-color: #252525;
+  border-color: #444;
+}

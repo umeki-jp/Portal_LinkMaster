@@ -9,7 +9,7 @@ function Modal({ isOpen, onClose, title, children, contentClassName = '' }) {
     : 'modal-content';
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay">
       {/* 白い枠の中をクリックした時は、裏の黒背景までクリック判定が貫通しないようにストップする */}
       <div className={modalContentClassName} onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">

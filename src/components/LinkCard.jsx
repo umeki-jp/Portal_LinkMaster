@@ -1,14 +1,18 @@
 import './LinkCard.css';
+import { useSettings } from '../contexts/SettingsContext';
 
 function LinkCard({ link, onDetailClick, onEditClick, onDeleteClick }) {
+  // ★設定コンテキストから翻訳関数を取得
+  const { t } = useSettings();
+
   // URLをクリップボードにコピーする関数
   const copyUrl = (e) => {
     e.stopPropagation(); // リンク自体のクリックイベントを防ぐ
     navigator.clipboard.writeText(link.url);
-    alert('URLをコピーしました！');
+    alert(t('urlCopied')); // 翻訳対応
   };
 
-  // 【修正】タグを最初の3つだけに制限する
+  // タグを最初の3つだけに制限する
   const displayTags = link.tags ? link.tags.slice(0, 3) : [];
 
   return (
@@ -47,10 +51,10 @@ function LinkCard({ link, onDetailClick, onEditClick, onDeleteClick }) {
 
       {/* 4. アクションボタン（右側に集約） */}
       <div className="col-actions">
-        <button className="action-btn detail" onClick={() => onDetailClick(link)}>詳細メモ</button>
-        <button className="action-btn copy" onClick={copyUrl}>URLｺﾋﾟｰ</button>
-        <button className="action-btn edit" onClick={() => onEditClick(link)}>編集</button>
-        <button className="action-btn delete" onClick={() => onDeleteClick(link.id)} style={{color: 'red'}}>削除</button>
+        <button className="action-btn detail" onClick={() => onDetailClick(link)}>{t('detail')}</button>
+        <button className="action-btn copy" onClick={copyUrl}>{t('urlCopied')}</button>
+        <button className="action-btn edit" onClick={() => onEditClick(link)}>{t('edit')}</button>
+        <button className="action-btn delete" onClick={() => onDeleteClick(link.id)} style={{color: 'red'}}>{t('delete')}</button>
       </div>
     </div>
   );

@@ -5,8 +5,13 @@ import Modal from './components/common/Modal';
 import LinkCard from './components/LinkCard';
 import LinkFormModal from './components/modals/LinkFormModal';
 import MenuModal from './components/modals/MenuModal';
+import { useSettings } from './contexts/SettingsContext';
+import { COMMON_TAGS } from './constants/languages';
 
 function App() {
+  // ★設定コンテキストから「言語設定」と「翻訳関数」を呼び出す
+  const { language, setLanguage, isDarkMode, setIsDarkMode, t } = useSettings();
+  
   // 1. データの読み込み（初期化）
   const [links, setLinks] = useState(() => {
     const saved = localStorage.getItem('portal_links');
@@ -35,6 +40,15 @@ function App() {
   const [selectedLink, setSelectedLink] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeGroup, setActiveGroup] = useState('local'); // 現在表示中のグループ
+  const [isSearchOpen, setIsSearchOpen] = useState(false); // 検索パネルの開閉
+  const [selectedSearchTags, setSelectedSearchTags] = useState([]); // 選択中の検索タグ
+
+  const toggleSearchTag = (tag) => {
+    setSelectedSearchTags(prev => 
+      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+    );
+  };
   
 
   // --- 処理ロジック ---
@@ -108,13 +122,22 @@ function App() {
     setIsDetailOpen(true);
   };
 
+  // タグ検索にも対応したフィルタリング
   const filteredLinks = links.filter(link => {
     const query = searchQuery.toLowerCase();
-    return (
+    
+    // フリーワードのチェック
+    const matchText = 
       link.title.toLowerCase().includes(query) ||
       (link.shortMemo || "").toLowerCase().includes(query) ||
-      (link.tags && link.tags.some(tag => tag.toLowerCase().includes(query)))
-    );
+      (link.tags && link.tags.some(tag => tag.toLowerCase().includes(query)));
+      
+    // タグ選択のチェック（選択されているタグを「すべて」含んでいるか。※AND検索）
+    const matchTags = selectedSearchTags.length === 0 || 
+      selectedSearchTags.every(selectedTag => link.tags && link.tags.includes(selectedTag));
+
+    // ワードとタグ両方の条件を満たせば表示
+    return matchText && matchTags;
   });
 
   const favoriteLinks = filteredLinks.filter(link => link.isFavorite);
@@ -122,32 +145,85 @@ function App() {
   return (
     <div className="app-container">
       <header className="app-header">
-        <h1>Link Master</h1>
-        {/* 検索窓を追加 */}
-        <div className="search-container">
-          <input 
-            type="text" 
-            placeholder="名称、メモ、タグで検索..." 
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="search-input"
-          />
-          {searchQuery && (
-            <button className="search-clear" onClick={() => setSearchQuery("")}>×</button>
-          )}
-        </div>
+        <h1>Link Master</h1>       
         <div className="header-actions">
-          <button className="menu-btn" onClick={() => setIsMenuOpen(true)}>メニュー</button>
+          {/* 文字を辞書対応 */}
+          <button className="menu-btn" onClick={() => setIsMenuOpen(true)}>{t('settings')}</button>
           <button className="add-btn" onClick={() => { setSelectedLink(null); setIsFormOpen(true); }}>
-            ＋ 新規リンク
+            ＋ {t('addLink')}
+          </button>
+          {/* ダークモード切替ボタン */}
+          <button className="icon-btn" onClick={() => setIsDarkMode(!isDarkMode)}>
+            {isDarkMode ? '☀️' : '🌙'}
+          </button>
+          {/* 言語切替ボタン */}
+          <button className="icon-btn" onClick={() => setLanguage(language === 'ja' ? 'en' : 'ja')}>
+            {language === 'ja' ? 'JA/EN' : 'EN/JA'}
           </button>
         </div>
       </header>
 
       <main className="app-main">
+        {/* =========================================
+            コントロールバー（グループタブ ＆ 検索ボタン）
+            ========================================= */}
+        <div className="control-bar">
+          <div className="group-tabs">
+            <button 
+              className={`tab-btn ${activeGroup === 'local' ? 'active' : ''}`}
+              onClick={() => setActiveGroup('local')}
+            >
+              {t('localGroup')}
+            </button>
+            {/* ※ログイン機能実装後に、ここにグループ1〜5のタブが動的に並びます */}
+          </div>
+          
+          <button 
+            className={`search-toggle-btn ${isSearchOpen ? 'active' : ''}`}
+            onClick={() => setIsSearchOpen(!isSearchOpen)}
+            title={t('search')}
+          >
+            🔍
+          </button>
+        </div>
+
+        {/* =========================================
+            検索パネル（ボタンを押すと展開されるエリア）
+            ========================================= */}
+        {isSearchOpen && (
+          <div className="search-panel">
+            <div className="search-input-wrapper">
+              <input 
+                type="text" 
+                placeholder={t('searchPlaceholder')} 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="search-input full-width"
+              />
+              {searchQuery && (
+                <button className="search-clear" onClick={() => setSearchQuery("")}>×</button>
+              )}
+            </div>
+            
+            <div className="tag-filter-area">
+              <span className="tag-filter-label">タグ検索:</span>
+              <div className="tag-list">
+                {COMMON_TAGS.map(tag => (
+                  <button 
+                    key={tag}
+                    className={`filter-tag-btn ${selectedSearchTags.includes(tag) ? 'selected' : ''}`}
+                    onClick={() => toggleSearchTag(tag)}
+                  >
+                    # {tag}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
         {favoriteLinks.length > 0 && (
           <section className="category-section favorite-section">
-            <h2 className="category-title">★ よく使う（お気に入り）</h2>
+            <h2 className="category-title">{t('favorites')}</h2>
             <div className="link-grid">
               {favoriteLinks.map(link => (
                 <LinkCard 
