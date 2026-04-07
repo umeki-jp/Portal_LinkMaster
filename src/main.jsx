@@ -2,13 +2,16 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
-import { SettingsProvider } from './contexts/SettingsContext.jsx' // ★これを追加
+import { SettingsProvider } from './contexts/SettingsContext.jsx'
+import { AuthProvider } from './contexts/AuthContext.jsx' // ★ 追加
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    {/* ★AppをSettingsProviderで包む */}
-    <SettingsProvider>
-      <App />
-    </SettingsProvider>
+    {/* ★ AuthProviderで一番外側を包む */}
+    <AuthProvider>
+      <SettingsProvider>
+        <App />
+      </SettingsProvider>
+    </AuthProvider>
   </StrictMode>,
 )

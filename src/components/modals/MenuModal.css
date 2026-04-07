@@ -225,3 +225,170 @@
   color: #fff;
   background-color: #333;
 }
+
+/* =========================================
+   ログイン入力欄のデザイン
+   ========================================= */
+.login-input {
+  padding: 8px 10px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 0.95rem;
+}
+
+.dark-mode .login-input {
+  background-color: #222;
+  border-color: #444;
+  color: #ddd;
+}
+
+/* =========================================
+   ログイン周りのデザイン
+   ========================================= */
+.login-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  max-width: 320px; /* PCでは少し広げる */
+  margin-top: 15px;
+}
+
+/* スマホでは幅いっぱいに */
+@media (max-width: 600px) {
+  .login-container {
+    max-width: 100%;
+  }
+}
+
+/* --- Googleログインボタン --- */
+.google-login-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: box-shadow 0.2s;
+  overflow: hidden; /* 画像の角丸からはみ出るのを防ぐ */
+}
+
+.google-login-btn:hover {
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.google-login-btn img {
+  display: block;
+  width: 100%; /* コンテナいっぱいに */
+  height: auto;
+}
+
+/* --- 区切り線 (または) --- */
+.login-separator {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: #888;
+  font-size: 0.85rem;
+}
+
+.login-separator::before,
+.login-separator::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #eee;
+}
+
+.login-separator span {
+  padding: 0 10px;
+}
+
+.dark-mode .login-separator::before,
+.dark-mode .login-separator::after {
+  border-color: #333;
+}
+
+/* --- メール/パスワードフォーム --- */
+.email-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* --- パスワード入力のラッパー (目のアイコン配置用) --- */
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input {
+  padding-right: 40px; /* アイコン分の隙間を確保 */
+  width: 100%;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 5px;
+  background: transparent;
+  border: none;
+  font-size: 1.1rem;
+  padding: 5px;
+  cursor: pointer;
+  color: #888;
+  transition: color 0.2s;
+}
+
+.password-toggle-btn:hover {
+  color: #333;
+}
+
+.dark-mode .password-toggle-btn:hover {
+  color: #fff;
+}
+
+.login-error-msg {
+  color: #e40000;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.login-submit-btn {
+  background-color: #1a73e8;
+  color: #fff;
+  border: none;
+  font-weight: bold;
+}
+
+/* --- カテゴリ設定周りの整理 (JSXのstyleを移行) --- */
+.category-edit-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.category-edit-num {
+  width: 30px;
+  font-weight: bold;
+  color: #555;
+}
+
+.dark-mode .category-edit-num {
+  color: #aaa;
+}
+
+.category-edit-input {
+  flex: 1;
+}
+
+.category-save-area {
+  margin-top: 15px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.update-success-msg {
+  color: #28a745;
+  font-weight: bold;
+}

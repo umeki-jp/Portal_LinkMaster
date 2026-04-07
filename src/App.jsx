@@ -7,10 +7,12 @@ import LinkFormModal from './components/modals/LinkFormModal';
 import MenuModal from './components/modals/MenuModal';
 import { useSettings } from './contexts/SettingsContext';
 import { COMMON_TAGS } from './constants/languages';
+import { useAuth } from './contexts/AuthContext';
 
 function App() {
   // ★設定コンテキストから「言語設定」と「翻訳関数」を呼び出す
   const { language, setLanguage, isDarkMode, setIsDarkMode, t } = useSettings();
+  const { user } = useAuth();
   
   // 1. データの読み込み（初期化）
   const [links, setLinks] = useState(() => {
@@ -148,7 +150,10 @@ function App() {
         <h1>Link Master</h1>       
         <div className="header-actions">
           {/* 文字を辞書対応 */}
-          <button className="menu-btn" onClick={() => setIsMenuOpen(true)}>{t('settings')}</button>
+          <button className="menu-btn" onClick={() => setIsMenuOpen(true)} style={{ position: 'relative' }}>
+            {t('settings')}
+            {user && <span className="online-badge" title="ログイン中"></span>}
+          </button>
           <button className="add-btn" onClick={() => { setSelectedLink(null); setIsFormOpen(true); }}>
             ＋ {t('addLink')}
           </button>

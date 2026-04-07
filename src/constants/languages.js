@@ -67,6 +67,17 @@ export const LANGUAGES = {
     categoryEditHint: "※「更新する」ボタンを押すまで保存されません。",
     updateBtn: "更新する",
     updateSuccess: "✅ カテゴリを更新しました",
+
+    email: "メールアドレス",
+    password: "パスワード",
+    loginBtn: "ログイン",
+    logoutBtn: "ログアウト",
+    loginError: "ログインに失敗しました。情報が正しいか確認してください。",
+    hubLoginHint: "※Umeki_Hubのアカウントでログインできます。",
+    or: "または",
+    loginWithGoogle: "Googleでログイン",
+    showPassword: "パスワードを表示",
+    hidePassword: "パスワードを非表示",
     
 
     // メッセージ・警告
@@ -141,6 +152,17 @@ export const LANGUAGES = {
     categoryEditHint: "*Changes are not saved until you click the Update button.",
     updateBtn: "Update",
     updateSuccess: "✅ Categories updated successfully",
+
+    email: "Email",
+    password: "Password",
+    loginBtn: "Login",
+    logoutBtn: "Logout",
+    loginError: "Login failed. Please check your credentials.",
+    hubLoginHint: "*You can log in with your Umeki_Hub account.",
+    or: "or",
+    loginWithGoogle: "Sign in with Google",
+    showPassword: "Show password",
+    hidePassword: "Hide password",
 
     // Messages & Warnings
     localSaveNote: "*Data will be saved only to the browser (Not logged in).",

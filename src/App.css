@@ -121,6 +121,34 @@ button.menu-btn {
   cursor: pointer;
 }
 
+/* =========================================
+   ログイン中のオンラインバッジ
+   ========================================= */
+.online-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 10px;
+  height: 10px;
+  background-color: #28a745; /* 鮮やかな緑 */
+  border: 2px solid #fff; /* 白いフチをつけてボタンと同化させない */
+  border-radius: 50%;
+  box-shadow: 0 0 5px rgba(40, 167, 69, 0.5); /* ほんのり光らせる */
+  animation: pulse 2s infinite; /* さりげない鼓動アニメーション */
+}
+
+/* ダークモード時のフチ色調整（ヘッダーの背景色に合わせる） */
+.dark-mode .online-badge {
+  border-color: #1e1e1e;
+}
+
+/* 鼓動アニメーション */
+@keyframes pulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 4px rgba(40, 167, 69, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
+}
+
 /* アコーディオンヘッダーのスタイル */
 .accordion-header {
   cursor: pointer;

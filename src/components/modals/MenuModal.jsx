@@ -1,33 +1,80 @@
-import React, { useState, useEffect } from 'react'; // ★ useEffect を追加
+import React, { useState, useEffect } from 'react';
 import './MenuModal.css';
 import { USAGE_STEPS, USAGE_NOTES } from '../../data/usageGuide';
 import { useSettings } from '../../contexts/SettingsContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { supabase } from '../../lib/supabase';
+
+// ★ Googleログイン画像のインポート (ファイル名修正済み)
+import googleSignInImg from '../../assets/images/web_light_sq_SI@3x.png';
 
 function MenuModal({ links, onImport, categories, setCategories }) {
   const { t, isDarkMode, setIsDarkMode, language, setLanguage } = useSettings();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('system');
 
-  // ★ 追加：カテゴリ編集用の一時保存ステートと、メッセージ用ステート
+  // --- ログイン関連のステート ---
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+  // ★ 追加：パスワード表示/非表示の切り替え
+  const [showPassword, setShowPassword] = useState(false);
+
+  // --- カテゴリ編集関連のステート ---
   const [localCategories, setLocalCategories] = useState(categories);
   const [saveMessage, setSaveMessage] = useState('');
 
-  // ★ 追加：メニューが開かれた時などに、親の最新データを一時保存ステートにコピーする
+  // 親データが変わったら一時保存用にも反映
   useEffect(() => {
     setLocalCategories(categories);
   }, [categories]);
 
-  // ★ 追加：更新ボタンを押した時の処理
-  const handleSaveCategories = () => {
-    setCategories(localCategories); // 親データ（アプリ全体）に反映
-    setSaveMessage(t('updateSuccess')); // 「更新しました」メッセージを表示
+  // ★ 追加：Googleログイン処理
+  const handleGoogleLogin = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        // Umeki_Hubの設定に合わせます。通常は空でOK
+        redirectTo: window.location.origin 
+      }
+    });
+    if (error) alert(error.message);
+  };
+
+  // メール/パスワードログイン処理
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoginError('');
     
-    // 5秒後にメッセージを消す
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    
+    if (error) {
+      setLoginError(t('loginError'));
+    } else {
+      setEmail('');
+      setPassword('');
+      setShowPassword(false); // パスワード表示を元に戻す
+    }
+  };
+
+  // ログアウト処理
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
+
+  // カテゴリ保存処理（5秒メッセージ付き）
+  const handleSaveCategories = () => {
+    setCategories(localCategories);
+    setSaveMessage(t('updateSuccess'));
     setTimeout(() => {
       setSaveMessage('');
     }, 5000);
   };
 
-  // エクスポート処理
+  // エクスポート/インポート処理
   const handleExport = () => {
     const exportData = { links: links, categories: categories };
     const dataStr = JSON.stringify(exportData, null, 2);
@@ -40,7 +87,6 @@ function MenuModal({ links, onImport, categories, setCategories }) {
     URL.revokeObjectURL(url);
   };
 
-  // インポート処理
   const handleImport = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -87,8 +133,71 @@ function MenuModal({ links, onImport, categories, setCategories }) {
           <div className="menu-tab-pane animate-fade-in">
             <section className="menu-section">
               <h3>{t('accountInfo')}</h3>
-              <p className="account-status">{t('guestUser')}</p>
-              <p className="hint-text">{t('loginFutureUpdate')}</p>
+              
+              {user ? (
+                // --- ログイン中 ---
+                <div>
+                  <p className="account-status">
+                    👤 {user.user_metadata?.full_name || user.user_metadata?.name || user.email}
+                  </p>
+                  <div style={{ marginTop: '15px' }}>
+                    <button className="menu-action-btn" onClick={handleLogout}>
+                      {t('logoutBtn')}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                // --- 未ログイン ---
+                <div className="login-container">
+                  {/* ★ Googleログインボタン */}
+                  <button className="google-login-btn" onClick={handleGoogleLogin}>
+                    <img src={googleSignInImg} alt={t('loginWithGoogle')} />
+                  </button>
+
+                  <div className="login-separator">
+                    <span>{t('or')}</span>
+                  </div>
+
+                  {/* メール/パスワードログイン */}
+                  <form onSubmit={handleLogin} className="email-login-form">
+                    <input 
+                      type="email" 
+                      placeholder={t('email')} 
+                      value={email} 
+                      onChange={(e) => setEmail(e.target.value)} 
+                      required 
+                      className="login-input"
+                    />
+                    
+                    {/* ★ パスワード入力（目のアイコン付き） */}
+                    <div className="password-wrapper">
+                      <input 
+                        type={showPassword ? "text" : "password"} /* ★ 表示/非表示を切り替え */
+                        placeholder={t('password')} 
+                        value={password} 
+                        onChange={(e) => setPassword(e.target.value)} 
+                        required 
+                        className="login-input password-input"
+                      />
+                      <button 
+                        type="button" /* submitを防ぐ */
+                        className="password-toggle-btn"
+                        onClick={() => setShowPassword(!showPassword)}
+                        title={showPassword ? t('hidePassword') : t('showPassword')}
+                      >
+                        {showPassword ? '🙈' : '👁️'}
+                      </button>
+                    </div>
+
+                    {loginError && <p className="login-error-msg">{loginError}</p>}
+                    
+                    <button type="submit" className="menu-action-btn login-submit-btn">
+                      {t('loginBtn')}
+                    </button>
+                  </form>
+                  <p className="hint-text">{t('hubLoginHint')}</p>
+                </div>
+              )}
             </section>
 
             <section className="menu-section">
@@ -112,7 +221,7 @@ function MenuModal({ links, onImport, categories, setCategories }) {
               <div className="policy-links">
                 <a href="https://umeki-hub.vercel.app/" target="_blank" rel="noopener noreferrer">{t('termsOfService')}</a>
                 <a href="https://umeki-hub.vercel.app/" target="_blank" rel="noopener noreferrer">{t('privacyPolicy')}</a>
-                <a href="https://umeki-hub.vercel.app/" target="_blank" rel="noopener noreferrer">{t('legalNotice')}</a>
+                <a href="https://umeki-hub.vercel.app/" target="_app" rel="noopener noreferrer">{t('legalNotice')}</a>
               </div>
             </section>
 
@@ -162,37 +271,29 @@ function MenuModal({ links, onImport, categories, setCategories }) {
               </h3>
               
               <div className="category-edit-list">
-                {/* ★ map の対象を categories から localCategories に変更 */}
                 {localCategories.map((cat, index) => (
-                  <div key={cat.id} style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
-                    <span style={{ width: '30px', fontWeight: 'bold', color: '#555' }}>{index + 1}.</span>
+                  <div key={cat.id} className="category-edit-row">
+                    <span className="category-edit-num">{index + 1}.</span>
                     <input
                       type="text"
                       value={cat.name}
                       onChange={(e) => {
                         const newName = e.target.value;
-                        // ★ 親の setCategories ではなく、一時保存の setLocalCategories を書き換える
                         setLocalCategories(prev => prev.map(c => c.id === cat.id ? { ...c, name: newName } : c));
                       }}
                       placeholder={t('categoryNamePlaceholder')}
-                      style={{ flex: 1, padding: '6px 10px', borderRadius: '4px', border: '1px solid #ccc' }}
+                      className="category-edit-input"
                     />
                   </div>
                 ))}
               </div>
 
-              {/* ★ 新規追加：更新ボタンとサクセスメッセージ */}
-              <div style={{ marginTop: '15px', display: 'flex', alignItems: 'center', gap: '15px' }}>
-                <button 
-                  className="menu-action-btn export" 
-                  onClick={handleSaveCategories}
-                  style={{ backgroundColor: '#1a73e8' }} /* 青色にして目立たせる */
-                >
+              <div className="category-save-area">
+                <button className="menu-action-btn export" onClick={handleSaveCategories} style={{ backgroundColor: '#1a73e8' }}>
                   {t('updateBtn')}
                 </button>
-                
                 {saveMessage && (
-                  <span className="animate-fade-in" style={{ color: '#28a745', fontWeight: 'bold' }}>
+                  <span className="animate-fade-in update-success-msg">
                     {saveMessage}
                   </span>
                 )}
