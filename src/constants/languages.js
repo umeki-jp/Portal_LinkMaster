@@ -14,6 +14,7 @@ export const LANGUAGES = {
     delete: "削除",
     close: "閉じる",
     urlCopied: "URLをコピーしました！",
+    copyUrlBtn: "URLコピー",
 
     // グループ・カテゴリ関連
     localGroup: "ブラウザ版",
@@ -23,7 +24,14 @@ export const LANGUAGES = {
     groupEdit: "グループ編集",
     groupCopy: "グループコピー",
     favorites: "★ よく使う（お気に入り）",
-    localGroup: "ブラウザ版",
+    groupManagement: "グループ管理",
+    addGroupBtn: "＋ 新規追加",
+    copyGroupBtn: "複製",
+    deleteGroupBtn: "削除",
+    newGroupNameHint: "新しいグループ名を入力...",
+    loginRequiredHint: "※この機能はログイン後に利用可能になります。",
+    moveUp: "上へ",
+    moveDown: "下へ",
 
     // 検索・タグ関連
     searchPlaceholder: "フリーワードまたはタグで検索...",
@@ -51,6 +59,8 @@ export const LANGUAGES = {
     termsOfService: "利用規約",
     privacyPolicy: "プライバシーポリシー",
     legalNotice: "特定商取引法に基づく表記",
+    site: "🌸オフィシャルサイト",
+    support: "☕サポート",
     
     usageInstructions: "使用方法",
     notes: "注意事項",
@@ -62,7 +72,7 @@ export const LANGUAGES = {
     dataRestoreDesc: "保存済みのJSONファイルを読み込みます。",
     jsonImport: "JSONインポート",
     
-    categorySettingsTitle: "カテゴリ設定（全10枠）",
+    categorySettingsTitle: "カテゴリ設定",
     categoryNamePlaceholder: "カテゴリ名（空欄も可）",
     categoryEditHint: "※「更新する」ボタンを押すまで保存されません。",
     updateBtn: "更新する",
@@ -84,7 +94,27 @@ export const LANGUAGES = {
     localSaveNote: "※未ログインのため、データはブラウザのみに保存されます。",
     cloudSyncWarning: "ログイン中はクラウドのデータでローカルデータが上書きされます。",
     copyConfirmWarning: "リンク数の少ないグループへのコピーです。本当によろしいですか？",
-    deleteConfirm: "本当に削除しますか？"
+    deleteConfirm: "本当に削除しますか？",
+
+    // リンクフォーム用
+    titleUrlRequired: "リンク名称とURLは必須項目です。",
+    titleMaxLength: "リンク名称は50文字以内で入力してください。",
+    tagsMaxLength: "タグは合計で30文字以内にしてください。",
+    urlFormatError: "URLは http:// または https:// から入力してください。",
+    linkTitle: "リンク名称",
+    urlKey: "URL",
+    recBrowser: "推奨ブラウザ",
+    selectRecBrowser: "-- 選択してください --",
+    shortMemoLabel: "簡易メモ（一覧に表示）",
+    detailMemoLabel: "詳細メモ（ポップアップに表示）",
+    tagsLabel: "タグ（カンマ区切りで最大3つ推奨）",
+    tagsPlaceholder: "毎日, 重要, 経理",
+    isFavoriteLabel: "お気に入り（最上部に表示）",
+    isHighlightedLabel: "強調（行をハイライト）",
+    displayOrder: "表示順",
+    orderPlaceholder: "例: 10, 20, 30...",
+    orderNote: "※数字が小さいほど上に表示",
+    saveSubmit: "保存する"
   },
   en: {
     // UI & Basic Operations
@@ -99,6 +129,7 @@ export const LANGUAGES = {
     delete: "Delete",
     close: "Close",
     urlCopied: "URL copied!",
+    copyUrlBtn: "Copy URL",
 
     // Groups & Categories
     localGroup: "Browser",
@@ -108,7 +139,14 @@ export const LANGUAGES = {
     groupEdit: "Edit Group",
     groupCopy: "Copy Group",
     favorites: "★ Favorites",
-    localGroup: "Browser",
+    groupManagement: "Group Management",
+    addGroupBtn: "+ Add New",
+    copyGroupBtn: "Copy",
+    deleteGroupBtn: "Delete",
+    newGroupNameHint: "New group name...",
+    loginRequiredHint: "*This feature is available after login.",
+    moveUp: "Up",
+    moveDown: "Down",
 
     // Search & Tags
     searchPlaceholder: "Search by keyword or tags...",
@@ -136,6 +174,8 @@ export const LANGUAGES = {
     termsOfService: "Terms of Service",
     privacyPolicy: "Privacy Policy",
     legalNotice: "Specified Commercial Transactions",
+    site: "🌸Official Site",
+    support: "☕Support",
     
     usageInstructions: "How to Use",
     notes: "Notes",
@@ -147,7 +187,7 @@ export const LANGUAGES = {
     dataRestoreDesc: "Load a previously saved JSON file.",
     jsonImport: "Import JSON",
     
-    categorySettingsTitle: "Category Settings (10 slots)",
+    categorySettingsTitle: "Category Settings",
     categoryNamePlaceholder: "Category name (can be empty)",
     categoryEditHint: "*Changes are not saved until you click the Update button.",
     updateBtn: "Update",
@@ -168,7 +208,27 @@ export const LANGUAGES = {
     localSaveNote: "*Data will be saved only to the browser (Not logged in).",
     cloudSyncWarning: "Local data will be overwritten by cloud data while logged in.",
     copyConfirmWarning: "Copying to a group with fewer links. Are you sure?",
-    deleteConfirm: "Are you sure you want to delete?"
+    deleteConfirm: "Are you sure you want to delete?",
+
+    // Link Form
+    titleUrlRequired: "Link title and URL are required.",
+    titleMaxLength: "Link title must be under 50 characters.",
+    tagsMaxLength: "Tags must be under 30 characters in total.",
+    urlFormatError: "URL must start with http:// or https://",
+    linkTitle: "Link Title",
+    urlKey: "URL",
+    recBrowser: "Recommended Browser",
+    selectRecBrowser: "-- Select Browser --",
+    shortMemoLabel: "Short Memo (List view)",
+    detailMemoLabel: "Detail Memo (Popup)",
+    tagsLabel: "Tags (Comma separated, max 3 recommended)",
+    tagsPlaceholder: "Daily, Important, Accounting",
+    isFavoriteLabel: "Favorite (Pin to top)",
+    isHighlightedLabel: "Highlight (Highlight row)",
+    displayOrder: "Display Order",
+    orderPlaceholder: "e.g., 10, 20, 30...",
+    orderNote: "*Smaller numbers display higher",
+    saveSubmit: "Save"
   }
 };
 

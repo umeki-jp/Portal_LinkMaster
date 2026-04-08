@@ -67,3 +67,28 @@
 .close-button:hover {
   color: #000;
 }
+
+/* =========================================
+   ダークモード追加対応
+   ========================================= */
+body.dark-mode .modal-content {
+  background-color: #1e1e1e;
+  border: 1px solid #333;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+body.dark-mode .modal-header {
+  border-bottom: 1px solid #333;
+}
+
+body.dark-mode .modal-header h2 {
+  color: #fff;
+}
+
+body.dark-mode .close-button {
+  color: #aaa;
+}
+
+body.dark-mode .close-button:hover {
+  color: #fff;
+}

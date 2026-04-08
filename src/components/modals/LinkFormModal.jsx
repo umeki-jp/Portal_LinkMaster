@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
 import './LinkFormModal.css';
 import { CATEGORIES } from '../../data/mockData';
+import { useSettings } from '../../contexts/SettingsContext';
 
 function LinkFormModal({ isOpen, onSubmit, initialData, categories }) {
+    const { t } = useSettings();
     // フォームの入力項目を管理するステート
     const [formData, setFormData] = useState({
         title: '',
         url: '',
-        categoryId: '1',
+        categoryId: categories && categories.length > 0 ? categories[0].id : '',
         browser: '', // デフォルトを空欄に
         shortMemo: '',
         detailMemo: '',
@@ -28,12 +30,12 @@ function LinkFormModal({ isOpen, onSubmit, initialData, categories }) {
         } else {
             // 新規の場合はリセット（browserは空欄に固定）
             setFormData({
-                title: '', url: '', categoryId: '1', browser: '',
+                title: '', url: '', categoryId: categories && categories.length > 0 ? categories[0].id : '', browser: '',
                 shortMemo: '', detailMemo: '', isFavorite: false,
                 isHighlighted: false, tags: '', order: 10
             });
         }
-    }, [initialData, isOpen]);
+    }, [initialData, isOpen, categories]);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -48,25 +50,25 @@ function LinkFormModal({ isOpen, onSubmit, initialData, categories }) {
 
         // 1. 基本的な必須チェック
         if (!formData.title.trim() || !formData.url.trim()) {
-            alert('リンク名称とURLは必須項目です。');
+            alert(t('titleUrlRequired'));
             return;
         }
 
         // 2. 名称の長さチェック（念のためJS側でも）
         if (formData.title.length > 50) {
-            alert('リンク名称は50文字以内で入力してください。');
+            alert(t('titleMaxLength'));
             return;
         }
 
         // 3. タグの合計文字数チェック
         if (formData.tags.length > 30) {
-            alert('タグは合計で30文字以内にしてください。');
+            alert(t('tagsMaxLength'));
             return;
         }
 
         // 4. URL形式チェック
         if (!formData.url.startsWith('http://') && !formData.url.startsWith('https://')) {
-            alert('URLは http:// または https:// から入力してください。');
+            alert(t('urlFormatError'));
             return;
         }
 
@@ -83,18 +85,18 @@ function LinkFormModal({ isOpen, onSubmit, initialData, categories }) {
     return (
         <form className="link-form" onSubmit={handleSubmit}>
             <div className="form-group">
-                <label>リンク名称</label>
+                <label>{t('linkTitle')}</label>
                 <input type="text" name="title" value={formData.title} onChange={handleChange} maxLength="50" required />
             </div>
 
             <div className="form-group">
-                <label>URL</label>
+                <label>{t('urlKey')}</label>
                 <input type="url" name="url" value={formData.url} onChange={handleChange} maxLength="200" required />
             </div>
 
             <div className="form-row">
                 <div className="form-group">
-                    <label>カテゴリ</label>
+                    <label>{t('category')}</label>
                     <select name="categoryId" value={formData.categoryId} onChange={handleChange}>
                     {categories.map((cat, index) => (
                         <option key={cat.id} value={cat.id}>
@@ -104,9 +106,9 @@ function LinkFormModal({ isOpen, onSubmit, initialData, categories }) {
                     </select>
                 </div>
                 <div className="form-group">
-                    <label>推奨ブラウザ</label>
+                    <label>{t('recBrowser')}</label>
                     <select name="browser" value={formData.browser} onChange={handleChange}>
-                        <option value="">-- 選択してください --</option>
+                        <option value="">{t('selectRecBrowser')}</option>
                         <option value="Edge">Edge</option>
                         <option value="Chrome">Chrome</option>
                         <option value="Firefox">Firefox</option>
@@ -116,33 +118,33 @@ function LinkFormModal({ isOpen, onSubmit, initialData, categories }) {
             </div>
 
             <div className="form-group">
-                <label>簡易メモ（一覧に表示）</label>
+                <label>{t('shortMemoLabel')}</label>
                 <input type="text" name="shortMemo" value={formData.shortMemo} onChange={handleChange} maxLength="50" />
             </div>
 
             <div className="form-group">
-                <label>詳細メモ（ポップアップに表示）</label>
+                <label>{t('detailMemoLabel')}</label>
                 <textarea name="detailMemo" value={formData.detailMemo} onChange={handleChange} rows="4" maxLength="1000"></textarea>
             </div>
 
             <div className="form-group">
-                <label>タグ（カンマ区切りで最大3つ推奨）</label>
-                <input type="text" name="tags" value={formData.tags} onChange={handleChange} maxLength="30" placeholder="毎日, 重要, 経理" />
+                <label>{t('tagsLabel')}</label>
+                <input type="text" name="tags" value={formData.tags} onChange={handleChange} maxLength="30" placeholder={t('tagsPlaceholder')} />
             </div>
 
             <div className="form-checkbox-group">
                 <label>
                     <input type="checkbox" name="isFavorite" checked={formData.isFavorite} onChange={handleChange} />
-                    お気に入り（最上部に表示）
+                    {t('isFavoriteLabel')}
                 </label>
                 <label>
                     <input type="checkbox" name="isHighlighted" checked={formData.isHighlighted} onChange={handleChange} />
-                    強調（行をハイライト）
+                    {t('isHighlightedLabel')}
                 </label>
             </div>
 
             <div className="form-group order-inline-group">
-                <label htmlFor="order">表示順</label>
+                <label htmlFor="order">{t('displayOrder')}</label>
                 <input
                     id="order"
                     className="order-input"
@@ -150,13 +152,13 @@ function LinkFormModal({ isOpen, onSubmit, initialData, categories }) {
                     name="order"
                     value={formData.order}
                     onChange={handleChange}
-                    placeholder="例: 10, 20, 30..."
+                    placeholder={t('orderPlaceholder')}
                 />
-                <span className="order-note">※数字が小さいほど上に表示</span>
+                <span className="order-note">{t('orderNote')}</span>
             </div>
 
             <div className="form-actions">
-                <button type="submit" className="save-btn">保存する</button>
+                <button type="submit" className="save-btn">{t('saveSubmit')}</button>
             </div>
         </form>
     );

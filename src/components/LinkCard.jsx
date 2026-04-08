@@ -18,18 +18,18 @@ function LinkCard({ link, onDetailClick, onEditClick, onDeleteClick }) {
   return (
     // クラス名を link-row に統一
     <div className={`link-row ${link.isHighlighted ? 'highlighted' : ''}`}>
-      
+
       {/* 1. タイトルとブラウザラベル（メイン情報） */}
       <div className="col-main">
         <h3 className="link-title">
-          <a 
-            href={link.url} 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            title={link.url} 
-            >
+          <a
+            href={link.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={link.url}
+          >
             {link.title}
-            </a>
+          </a>
         </h3>
         <span className="browser-badge">{link.browser}</span>
         {link.isFavorite && <span className="fav-star">★</span>}
@@ -52,9 +52,9 @@ function LinkCard({ link, onDetailClick, onEditClick, onDeleteClick }) {
       {/* 4. アクションボタン（右側に集約） */}
       <div className="col-actions">
         <button className="action-btn detail" onClick={() => onDetailClick(link)}>{t('detail')}</button>
-        <button className="action-btn copy" onClick={copyUrl}>{t('urlCopied')}</button>
+        <button className="action-btn copy" onClick={copyUrl}>{t('copyUrlBtn')}</button>
         <button className="action-btn edit" onClick={() => onEditClick(link)}>{t('edit')}</button>
-        <button className="action-btn delete" onClick={() => onDeleteClick(link.id)} style={{color: 'red'}}>{t('delete')}</button>
+        <button className="action-btn delete" onClick={() => onDeleteClick(link.id)} style={{ color: 'red' }}>{t('delete')}</button>
       </div>
     </div>
   );

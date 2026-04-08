@@ -84,3 +84,32 @@
 .save-btn:hover {
   background-color: #1557b0;
 }
+
+/* =========================================
+   ダークモード追加対応
+   ========================================= */
+body.dark-mode .link-form label {
+  color: #e0e0e0;
+}
+
+body.dark-mode .link-form input[type="text"],
+body.dark-mode .link-form input[type="url"],
+body.dark-mode .link-form input[type="number"],
+body.dark-mode .link-form select,
+body.dark-mode .link-form textarea {
+  background-color: #2c2c2c;
+  color: #fff;
+  border-color: #555;
+}
+
+body.dark-mode .order-note {
+  color: #aaa;
+}
+
+body.dark-mode .save-btn {
+  background-color: #e40000;
+}
+
+body.dark-mode .save-btn:hover {
+  background-color: #cc0000;
+}

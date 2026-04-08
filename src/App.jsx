@@ -8,112 +8,733 @@ import MenuModal from './components/modals/MenuModal';
 import { useSettings } from './contexts/SettingsContext';
 import { COMMON_TAGS } from './constants/languages';
 import { useAuth } from './contexts/AuthContext';
+import { db } from './lib/db';
 
 function App() {
   // ★設定コンテキストから「言語設定」と「翻訳関数」を呼び出す
   const { language, setLanguage, isDarkMode, setIsDarkMode, t } = useSettings();
   const { user } = useAuth();
-  
-  // 1. データの読み込み（初期化）
+
+  // 1. 最初から「ブラウザ版」を選択状態にする
+  const [activeGroup, setActiveGroup] = useState('local');
+
+  // 2. 起動した瞬間に、localStorageからデータを直接読み込む（useEffectを待たない）
   const [links, setLinks] = useState(() => {
     const saved = localStorage.getItem('portal_links');
-    return saved ? JSON.parse(saved) : INITIAL_LINKS; // 初回はサンプルを表示
+    return saved ? JSON.parse(saved).map(l => ({ ...l, isCloud: false })) : INITIAL_LINKS;
   });
-  
-  // 2. データの自動保存（linksが更新されるたびに実行）
-  useEffect(() => {
-    localStorage.setItem('portal_links', JSON.stringify(links));
-  }, [links]);
 
-  // 1. カテゴリデータの読み込み（初期化）
   const [categories, setCategories] = useState(() => {
     const saved = localStorage.getItem('portal_categories');
-    return saved ? JSON.parse(saved) : CATEGORIES; // 初回はmockDataの10枠を表示
+    return saved ? JSON.parse(saved).map(c => ({ ...c, isCloud: false })) : CATEGORIES;
   });
 
-  // 2. カテゴリデータの自動保存
-  useEffect(() => {
-    localStorage.setItem('portal_categories', JSON.stringify(categories));
-  }, [categories]);
+  const [groups, setGroups] = useState(() => {
+    const saved = localStorage.getItem('portal_groups');
+    let initialGroups = saved ? JSON.parse(saved).map(g => ({ ...g, isCloud: false })) : [
+      { id: 'local', name: 'ブラウザ版' },
+      { id: 'group1', name: 'グループ1' }
+    ];
+    // localStorageが壊れていてlocalが消えている場合の保険
+    if (!initialGroups.some(g => g.id === 'local')) {
+      initialGroups = [{ id: 'local', name: 'ブラウザ版' }, ...initialGroups];
+    }
+    return initialGroups;
+  });
 
-  // モーダル管理用のステート
+  const [isLoading, setIsLoading] = useState(false); // 初期値はfalseにしておく
+
+  // A. 初期読込 & ログイン/ログアウト時のデータ切り替え
+  useEffect(() => {
+    const loadInitialData = async () => {
+      setIsLoading(true);
+
+      if (user) {
+        // --- ☁️ ログイン中: クラウド(Supabase)から取得 ---
+        try {
+          const data = await db.fetchAll();
+
+          const cloudGroups = data.groups.map(g => ({ ...g, isCloud: true }));
+          const cloudCategories = data.categories.map(c => ({ ...c, isCloud: true }));
+          const cloudLinks = data.links.map(l => ({ ...l, isCloud: true }));
+
+          const savedLinks = localStorage.getItem('portal_links');
+          const savedCats = localStorage.getItem('portal_categories');
+          const savedGroups = localStorage.getItem('portal_groups');
+
+          const localLinks = savedLinks ? JSON.parse(savedLinks).map(l => ({ ...l, isCloud: false })) : INITIAL_LINKS;
+          const localCats = savedCats ? JSON.parse(savedCats).map(c => ({ ...c, isCloud: false })) : CATEGORIES;
+          let localGroups = savedGroups ? JSON.parse(savedGroups).map(g => ({ ...g, isCloud: false })) : [
+            { id: 'local', name: 'ブラウザ版' },
+            { id: 'group1', name: 'グループ1' }
+          ];
+          if (!localGroups.some(g => g.id === 'local')) {
+            localGroups = [{ id: 'local', name: 'ブラウザ版' }, ...localGroups];
+          }
+
+          setGroups([...localGroups, ...cloudGroups]);
+          setCategories([...localCats, ...cloudCategories]);
+          setLinks([...localLinks, ...cloudLinks]);
+
+          // アクティブなグループが設定されていなければ local か クラウドの最初のIDにする
+          if (!activeGroup || (activeGroup === '' && cloudGroups.length === 0)) {
+            setActiveGroup('local');
+          } else if (activeGroup === '' && cloudGroups.length > 0) {
+            setActiveGroup(cloudGroups[0].id);
+          }
+        } catch (error) {
+          console.error("Cloud fetch error:", error);
+        }
+      } else {
+        // --- 💻 未ログイン: ローカルストレージ(ブラウザ版)から取得 ---
+        const savedLinks = localStorage.getItem('portal_links');
+        const savedCats = localStorage.getItem('portal_categories');
+        const savedGroups = localStorage.getItem('portal_groups');
+
+        const localLinks = savedLinks ? JSON.parse(savedLinks).map(l => ({ ...l, isCloud: false })) : INITIAL_LINKS;
+        const localCats = savedCats ? JSON.parse(savedCats).map(c => ({ ...c, isCloud: false })) : CATEGORIES;
+        let localGroups = savedGroups ? JSON.parse(savedGroups).map(g => ({ ...g, isCloud: false })) : [
+          { id: 'local', name: 'ブラウザ版' },
+          { id: 'group1', name: 'グループ1' }
+        ];
+        if (!localGroups.some(g => g.id === 'local')) {
+          localGroups = [{ id: 'local', name: 'ブラウザ版' }, ...localGroups];
+        }
+
+        setLinks(localLinks);
+        setCategories(localCats);
+        setGroups(localGroups);
+        setActiveGroup('local');
+      }
+      setIsLoading(false);
+    };
+
+    loadInitialData();
+  }, [user]);
+
+  // B. ブラウザ版(Local)データの自動保存
+  // ログインの有無に関わらず、読み込み完了後は常にローカルに最新を保持（爆速起動のため）
+  useEffect(() => {
+    if (!isLoading) {
+      const localLinksToSave = links.filter(l => !l.isCloud);
+      const localCatsToSave = categories.filter(c => !c.isCloud);
+      const localGroupsToSave = groups.filter(g => !g.isCloud);
+
+      localStorage.setItem('portal_links', JSON.stringify(localLinksToSave));
+      localStorage.setItem('portal_categories', JSON.stringify(localCatsToSave));
+      localStorage.setItem('portal_groups', JSON.stringify(localGroupsToSave));
+    }
+  }, [links, categories, groups, isLoading]);
+
+  // C. カテゴリ枠の自動生成 (クラウド・ローカル両対応)
+  useEffect(() => {
+    if (isLoading || !activeGroup) return;
+
+    // クラウド側データは group_id, ローカル側データは groupId 
+    const currentGroupCats = categories.filter(c => (c.group_id || c.groupId || 'local') === activeGroup);
+
+    const isCloudGroup = user && activeGroup !== 'local' && !activeGroup.startsWith('group_');
+
+    // ★ バグ起因で保存されてしまったダミーID (_cat) を持つカテゴリがクラウドグループに存在する場合、除去する
+    if (isCloudGroup) {
+      const hasDummyCats = currentGroupCats.some(c => typeof c.id === 'string' && c.id.includes('_cat'));
+      if (hasDummyCats) {
+        setCategories(prev => prev.filter(c => {
+          const isTargetGroup = (c.groupId === activeGroup || c.group_id === activeGroup);
+          const isDummy = typeof c.id === 'string' && c.id.includes('_cat');
+          return !(isTargetGroup && isDummy);
+        }));
+        return; // 次のレンダリングで currentGroupCats.length === 0 の処理へ移行させる
+      }
+    }
+    
+    if (currentGroupCats.length === 0) {
+      if (activeGroup === 'local' || activeGroup.startsWith('group_') || !user) { // ★!userを追加
+        // ローカル版グループの場合はダミーIDで生成
+        const newCats = Array.from({ length: 10 }).map((_, i) => ({
+          id: activeGroup === 'local' ? `local_cat${i + 1}` : `${activeGroup}_cat${i + 1}`,
+          name: '',
+          order: i + 1,
+          groupId: activeGroup
+        }));
+        setCategories(prev => [...prev, ...newCats]);
+      } else if (user) {
+        // クラウドグループでカテゴリがまだない場合は、リアルなUUIDを発行するためSupabaseに枠を作る
+        const initCloudCats = async () => {
+          try {
+            const promises = Array.from({ length: 10 }).map((_, i) => 
+               db.insertCategory(activeGroup, '', i + 1)
+            );
+            const newCloudCats = await Promise.all(promises);
+            setCategories(prev => [...prev, ...newCloudCats.map(c => ({...c, isCloud: true}))]);
+          } catch(error) {
+            console.error("Cloud category init error:", error);
+          }
+        };
+        initCloudCats();
+      }
+    }
+  }, [activeGroup, categories, isLoading, user]);
+
+  // UI・モーダル管理用のステート
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedLink, setSelectedLink] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeGroup, setActiveGroup] = useState('local'); // 現在表示中のグループ
-  const [isSearchOpen, setIsSearchOpen] = useState(false); // 検索パネルの開閉
-  const [selectedSearchTags, setSelectedSearchTags] = useState([]); // 選択中の検索タグ
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [selectedSearchTags, setSelectedSearchTags] = useState([]);
 
   const toggleSearchTag = (tag) => {
-    setSelectedSearchTags(prev => 
+    setSelectedSearchTags(prev =>
       prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
     );
   };
-  
 
-  // --- 処理ロジック ---
-
-  const [openCategories, setOpenCategories] = useState(
-    CATEGORIES.map(c => c.id) // 最初は全部開いた状態にする
-  );
-
-  //  カテゴリの開閉を切り替える関数
+  const [closedCategories, setClosedCategories] = useState([]);
   const toggleCategory = (categoryId) => {
-    setOpenCategories(prev => 
-      prev.includes(categoryId) 
-        ? prev.filter(id => id !== categoryId) // あれば消す（閉じる）
-        : [...prev, categoryId]               // なければ足す（開く）
-    );
+    setClosedCategories(prev => prev.includes(categoryId) ? prev.filter(id => id !== categoryId) : [...prev, categoryId]);
   };
 
-  // インポート処理（MenuModal用）
-  const handleImportData = (importedLinks, importedCategories) => {
-    // リンクデータの復元
-    setLinks(importedLinks);
-    
-    // ★カテゴリデータも入っていれば復元する
-    if (importedCategories) {
-      setCategories(importedCategories);
+  // ==========================================
+  // 現在のグループのデータだけを抽出する
+  // ==========================================
+  // データ読込中や activeGroup が未定の場合は空配列を返すようにガード
+  const activeGroupLinks = activeGroup
+    ? links.filter(link => (link.group_id || link.groupId || 'local') === activeGroup)
+    : [];
+
+  const activeGroupCategories = activeGroup
+    ? categories.filter(cat => (cat.group_id || cat.groupId || 'local') === activeGroup)
+    : [];
+
+  // ==========================================
+  // グループ管理のロジック
+  // ==========================================
+  const handleAddGroup = async (groupName) => {
+    if (groups.length >= 10) {
+      alert('グループは最大10個まで作成できます。');
+      return;
     }
-    
-    setIsMenuOpen(false); // メニューを閉じる
+
+    // ★ログインしている場合はクラウドへ、そうでなければローカルへ保存を振り分けます
+    if (user) {
+      try {
+        // db.js の関数を使い、クラウド(Supabase)に保存
+        const newGroup = await db.insertGroup(groupName, groups.length);
+        setGroups(prev => [...prev, { ...newGroup, isCloud: true }]);
+        setActiveGroup(newGroup.id);
+      } catch (error) {
+        alert("クラウドへのグループ作成に失敗しました。");
+      }
+    } else {
+      // 未ログイン時は今まで通りのローカル処理
+      const newGroupId = `group_${Date.now()}`;
+      const newGroup = { id: newGroupId, name: groupName, isCloud: false };
+      setGroups(prev => [...prev, newGroup]);
+      setActiveGroup(newGroupId);
+    }
   };
 
-  // 新規・編集の保存ボタンが押された時
-  const handleSaveLink = (data) => {
-    // 重複チェック（編集時は自分自身を除外して判定）
-    const isDuplicate = links.some(link => 
+  const handleUpdateGroupName = async (groupId, newName) => {
+    // UIのレスポンスを速くするため、まずは画面上の表示（state）を更新します
+    setGroups(prev => prev.map(g => g.id === groupId ? { ...g, name: newName } : g));
+
+    // ログインしており、かつ操作対象が「ブラウザ版(local)」でない場合はクラウドも更新
+    if (user && groupId !== 'local') {
+      try {
+        // db.js の関数を使い、Supabaseのデータを書き換えます
+        await db.updateGroup(groupId, { name: newName });
+      } catch (error) {
+        console.error("クラウドのグループ名更新に失敗:", error);
+        // 必要に応じて、失敗時にStateを元に戻す処理を入れることも可能です
+      }
+    }
+    // ※未ログイン時は、既存のuseEffect(B)がlocalStorageへ自動保存してくれます
+  };
+
+  // 特定のグループをメインに設定する処理
+  const handleSetMainGroup = async (groupId) => {
+    // ブラウザ版（local）はメイン設定の対象外
+    if (groupId === 'local') return;
+
+    const targetGroup = groups.find(g => g.id === groupId);
+    const isCurrentlyMain = targetGroup?.is_main;
+
+    try {
+      if (isCurrentlyMain) {
+        // すでにメインの場合は解除（単一グループの更新）
+        await db.updateGroup(groupId, { is_main: false });
+        setGroups(prev => prev.map(g => 
+          g.id === groupId ? { ...g, is_main: false } : g
+        ));
+      } else {
+        // 新たにメインに設定する場合（他を解除してこれを設定）
+        if (user && !groupId.startsWith('group_')) {
+          // クラウドに実体があるUUIDグループの場合
+          await db.setMainGroup(groupId);
+        }
+
+        // フロントエンドのステートを一括更新
+        setGroups(prev => prev.map(g => {
+          if (g.id === groupId) {
+            return { ...g, is_main: true };
+          } else {
+            // 他の「ブラウザ版以外」のグループはすべてメインから外す
+            return g.id === 'local' ? g : { ...g, is_main: false };
+          }
+        }));
+      }
+    } catch (error) {
+      console.error("Main group toggle error:", error);
+      alert("メイングループの設定更新に失敗しました。");
+    }
+  };
+
+  const handleDeleteGroup = async (groupId) => {
+    // 「ブラウザ版」そのものは削除させないガード
+    if (groupId === 'local') {
+      alert('「ブラウザ版」グループは削除できません。');
+      return;
+    }
+
+    if (!window.confirm('このグループと、グループ内のすべてのリンク・カテゴリを削除します。よろしいですか？')) return;
+
+    const groupToDelete = groups.find(g => g.id === groupId);
+
+    if (user && groupToDelete && groupToDelete.isCloud) {
+      // ☁️ ログイン中 & クラウドのグループを消す場合
+      try {
+        // db.js の関数を呼び出し。DB側の設定(Cascade)によりカテゴリ・リンクも一瞬で消えます
+        await db.deleteGroup(groupId);
+
+        // 手元の画面(State)からも削除して同期させる
+        setGroups(prev => prev.filter(g => g.id !== groupId));
+        setCategories(prev => prev.filter(c => (c.group_id || c.groupId) !== groupId));
+        setLinks(prev => prev.filter(l => (l.group_id || l.groupId) !== groupId));
+      } catch (error) {
+        alert("クラウドからの削除に失敗しました。");
+      }
+    } else {
+      // 💻 未ログイン または ログイン中に作成した「ローカルな追加グループ」を消す場合
+      setGroups(prev => prev.filter(g => g.id !== groupId));
+      setLinks(prev => prev.filter(l => (l.groupId || 'local') !== groupId));
+      setCategories(prev => prev.filter(c => (c.groupId || 'local') !== groupId));
+    }
+
+    // 消したグループを開いていた場合、別のグループに自動で切り替える
+    if (activeGroup === groupId) {
+      // ログイン中なら残りのクラウドグループの先頭へ、未ログインなら「local」へ
+      const fallback = user ? (groups.find(g => g.id !== groupId)?.id || '') : 'local';
+      setActiveGroup(fallback);
+    }
+  };
+
+  const handleCopyGroup = async (sourceGroupId, sourceGroupName) => {
+    if (groups.length >= 10) {
+      alert('グループは最大10個まで作成できます。');
+      return;
+    }
+    const newGroupName = `${sourceGroupName}のコピー`;
+
+    if (user) {
+      // ☁️ クラウド(Supabase)上で複製する
+      try {
+        // 1. グループを作成
+        const newGroup = await db.insertGroup(newGroupName, groups.length, false);
+        const newGroupId = newGroup.id;
+
+        // 2. カテゴリを複製
+        const sourceCats = categories.filter(c => (c.groupId || c.group_id || 'local') === sourceGroupId).sort((a,b) => (a.order || a.order_index) - (b.order || b.order_index));
+        
+        const newCatsPromises = sourceCats.map((c, i) => 
+          db.insertCategory(newGroupId, c.name, i + 1)
+        );
+        const insertedCats = await Promise.all(newCatsPromises);
+        
+        // 元のカテゴリIDを新しいカテゴリUUIDにマッピングするための辞書
+        const catIdMap = {};
+        sourceCats.forEach((sc, i) => {
+          catIdMap[sc.id] = insertedCats[i]?.id || insertedCats[0]?.id;
+        });
+
+        // 3. リンクを複製
+        const sourceLinks = links.filter(l => (l.groupId || l.group_id || 'local') === sourceGroupId);
+        const newLinksPromises = sourceLinks.map((l, i) => {
+          const oldCatId = l.category_id || l.categoryId || l.category;
+          const newCatId = catIdMap[oldCatId] || insertedCats[0]?.id;
+          return db.insertLink({
+            title: l.title || '',
+            url: l.url || '',
+            shortMemo: l.shortMemo || '',
+            detailMemo: l.detailMemo || '',
+            browser: l.browser || '',
+            tags: l.tags || [],
+            isFavorite: !!l.isFavorite,
+            isHighlighted: !!l.isHighlighted,
+            group_id: newGroupId,    // DBと一致
+            category_id: newCatId,   // DBと一致
+            order: i + 1
+          });
+        });
+        const insertedLinks = await Promise.all(newLinksPromises);
+
+        // 4. ステートを直接更新せず、DBから最新状態を再取得して同期する（二重表示防止）
+        const freshData = await db.fetchAll();
+
+        const cloudGroups = freshData.groups.map(g => ({ ...g, isCloud: true }));
+        const cloudCategories = freshData.categories.map(c => ({ ...c, isCloud: true }));
+        const cloudLinks = freshData.links.map(l => ({ ...l, isCloud: true }));
+
+        // ローカルは維持し、クラウド分だけ最新にリフレッシュ
+        setGroups(prev => [...prev.filter(g => !g.isCloud), ...cloudGroups]);
+        setCategories(prev => [...prev.filter(c => !c.isCloud), ...cloudCategories]);
+        setLinks(prev => [...prev.filter(l => !l.isCloud), ...cloudLinks]);
+
+        setActiveGroup(newGroupId);
+
+      } catch (error) {
+        console.error("Cloud copy error:", error);
+        alert('クラウドでのグループ複製に失敗しました。');
+      }
+    } else {
+      // 💻 未ログイン時のローカル複製処理
+      const newGroupId = `group_${Date.now()}`;
+      setGroups(prev => [...prev, { 
+        id: newGroupId, 
+        name: newGroupName, 
+        isCloud: false 
+      }]);
+
+      // カテゴリの複製とIDマッピング
+      const sourceCats = categories.filter(c => (c.groupId || 'local') === sourceGroupId);
+      const copiedCats = sourceCats.map((c, i) => ({
+        ...c,
+        id: `${newGroupId}_cat${i + 1}`,
+        groupId: newGroupId,
+        isCloud: false
+      }));
+
+      const catIdMap = {};
+      sourceCats.forEach((sc, i) => {
+        catIdMap[sc.id] = copiedCats[i].id;
+      });
+
+      // リンクの複製（新しいカテゴリIDに付け替える）
+      const sourceLinks = links.filter(l => (l.groupId || 'local') === sourceGroupId);
+      const copiedLinks = sourceLinks.map(l => ({
+        ...l,
+        id: `link_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+        groupId: newGroupId,
+        categoryId: catIdMap[l.categoryId || l.category_id] || copiedCats[0].id,
+        createdAt: new Date().toISOString(),
+        isCloud: false
+      }));
+
+      setCategories(prev => [...prev, ...copiedCats]);
+      setLinks(prev => [...prev, ...copiedLinks]);
+
+      setActiveGroup(newGroupId);
+    }
+  };
+
+  // グループを1つ上へ移動する処理
+  const handleMoveGroupUp = (index) => {
+    if (index === 0) return; // すでに一番上の場合は何もしない
+    const newGroups = [...groups];
+    const temp = newGroups[index - 1];
+    newGroups[index - 1] = newGroups[index];
+    newGroups[index] = temp;
+    
+    setGroups(newGroups);
+
+    // クラウド環境であれば、並び替え後の順序(order_index)を全更新する
+    if (user) {
+      newGroups.forEach((g, i) => {
+        if (g.isCloud && g.id !== 'local' && !g.id.startsWith('group_')) {
+          db.updateGroup(g.id, { order_index: i }).catch(err => console.error("Order move up error:", err));
+        }
+      });
+    }
+  };
+
+  // グループを1つ下へ移動する処理
+  const handleMoveGroupDown = (index) => {
+    if (index === groups.length - 1) return; // すでに一番下の場合は何もしない
+    const newGroups = [...groups];
+    const temp = newGroups[index + 1];
+    newGroups[index + 1] = newGroups[index];
+    newGroups[index] = temp;
+    
+    setGroups(newGroups);
+
+    // クラウド環境であれば、並び替え後の順序(order_index)を全更新する
+    if (user) {
+      newGroups.forEach((g, i) => {
+        if (g.isCloud && g.id !== 'local' && !g.id.startsWith('group_')) {
+          db.updateGroup(g.id, { order_index: i }).catch(err => console.error("Order move down error:", err));
+        }
+      });
+    }
+  };
+
+  // ブラウザ版 ➔ クラウドへのコピー（バックアップ/初期同期）
+  const handleBackupLocalToCloud = async () => {
+    if (!user) return;
+
+    const cloudGroupCount = groups.filter(g => g.isCloud).length;
+    if (cloudGroupCount >= 10) {
+      alert('クラウドのグループ枠（最大10個）に空きがありません。');
+      return;
+    }
+
+    if (!window.confirm('現在のブラウザ版の内容を、クラウドの新しいグループとしてコピーしますか？')) return;
+
+    setIsLoading(true);
+    try {
+      // 1. 新規グループ作成
+      const newGroup = await db.insertGroup('ブラウザ版からのコピー', cloudGroupCount);
+      const newGroupId = newGroup.id;
+
+      // 2. ブラウザ版のカテゴリを抽出（groupIdが'local'、または未定義のもの）
+      const localCats = categories.filter(c => !c.isCloud && (c.groupId === 'local' || !c.groupId || (c.group_id === 'local')));
+      const catMap = {};
+      const newCloudCatsForState = [];
+
+      for (const [i, cat] of localCats.entries()) {
+        const orderValue = cat.order || (i + 1);
+        const createdCat = await db.insertCategory(newGroupId, cat.name || '', orderValue);
+        
+        catMap[cat.id] = createdCat.id; // 旧IDと新UUIDを紐付け
+        newCloudCatsForState.push({ ...createdCat, isCloud: true });
+      }
+
+      // 3. ブラウザ版のリンクを抽出
+      const localLinks = links.filter(l => !l.isCloud && (l.groupId === 'local' || !l.groupId || (l.group_id === 'local')));
+      
+      const fallbackCatId = newCloudCatsForState.length > 0 ? newCloudCatsForState[0].id : null;
+
+      const linkPromises = localLinks.map(link => {
+        // 不要な既存IDやUIフラグを分離
+        const { id, isCloud, groupId, categoryId, ...rest } = link;
+        
+        // カテゴリIDの変換
+        const targetCatId = catMap[link.categoryId] || fallbackCatId;
+
+       return db.insertLink({
+          title: link.title || '',
+          url: link.url || '',
+          shortMemo: link.shortMemo || '',   // DBと完全一致
+          detailMemo: link.detailMemo || '', // DBと完全一致
+          browser: link.browser || '',
+          order: link.order || 10,
+          tags: link.tags || [],
+          isFavorite: !!link.isFavorite,     // DBと完全一致
+          isHighlighted: !!link.isHighlighted, // DBと完全一致
+          group_id: newGroupId,              // DBの "group_id" と一致
+          category_id: targetCatId           // DBの "category_id" と一致
+        });
+      });
+
+      const uploadedLinks = await Promise.all(linkPromises);
+
+      // 4. フロントエンドのステートを更新（既存のデータに付け加える）
+      setGroups(prev => [...prev, { ...newGroup, isCloud: true }]);
+      setCategories(prev => [...prev, ...newCloudCatsForState]);
+      setLinks(prev => [...prev, ...uploadedLinks.map(l => ({ ...l, isCloud: true }))]);
+
+      alert(`コピー完了：カテゴリ ${newCloudCatsForState.length}件、リンク ${uploadedLinks.length}件をクラウドに保存しました。`);
+    } catch (error) {
+      console.error("Backup to cloud error:", error);
+      alert("コピー中にエラーが発生しました。詳細はコンソールを確認してください。");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // ★追加：クラウドグループ ➔ ブラウザ版への上書きコピー（リストア）
+  const handleRestoreCloudToLocal = async (sourceGroupId) => {
+    if (!user || !sourceGroupId) return;
+
+    const sourceGroup = groups.find(g => g.id === sourceGroupId);
+    if (!sourceGroup) return;
+
+    const msg = `【警告】\n現在のブラウザ版のデータはすべて消去され、\n「${sourceGroup.name}」の内容で上書きされます。\n\n本当によろしいですか？`;
+    if (!window.confirm(msg)) return;
+
+    try {
+      // 1. 対象グループのクラウドデータを抽出
+      const cloudLinks = links.filter(l => (l.group_id || l.groupId) === sourceGroupId);
+      const cloudCats = categories.filter(c => (c.group_id || c.groupId) === sourceGroupId);
+
+      // 2. IDをローカル形式（local_catX / local_linkX）に変換するためのマップ作成
+      const catMap = {};
+      const newLocalCats = cloudCats.map((cat, i) => {
+        const newId = `local_cat${i + 1}`;
+        catMap[cat.id] = newId;
+        return {
+          id: newId,
+          name: cat.name,
+          order: cat.order || i + 1,
+          groupId: 'local',
+          isCloud: false
+        };
+      });
+
+      const newLocalLinks = cloudLinks.map(link => ({
+        id: `local_link_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+        title: link.title,
+        url: link.url,
+        shortMemo: link.short_memo || link.shortMemo,
+        detailMemo: link.detail_memo || link.detailMemo,
+        tags: link.tags,
+        isFavorite: link.is_favorite || link.isFavorite,
+        categoryId: catMap[link.category_id || link.categoryId] || 'local_cat1',
+        groupId: 'local',
+        isCloud: false,
+        createdAt: new Date().toISOString()
+      }));
+
+      // 3. ブラウザ版以外のデータ（他グループ）は残しつつ、ブラウザ版(local)だけを差し替える
+      setCategories(prev => [
+        ...prev.filter(c => (c.group_id || c.groupId || 'local') !== 'local'),
+        ...newLocalCats
+      ]);
+      setLinks(prev => [
+        ...prev.filter(l => (l.group_id || l.groupId || 'local') !== 'local'),
+        ...newLocalLinks
+      ]);
+
+      // 4. 強制的にブラウザ版タブへ切り替え
+      setActiveGroup('local');
+      alert('ブラウザ版への上書きコピーが完了しました。');
+
+    } catch (error) {
+      console.error("Restore from cloud error:", error);
+      alert("コピー中にエラーが発生しました。");
+    }
+  };
+
+  // インポート処理
+  const handleImportData = (importedLinks, importedCategories) => {
+    setLinks(importedLinks);
+    if (importedCategories) setCategories(importedCategories);
+    setIsMenuOpen(false);
+  };
+
+  // メニューからカテゴリだけを更新する専用処理
+  const handleUpdateCategories = async (updatedActiveCategories) => {
+    setCategories(prev => {
+      // クラウドデータの持つ group_id を追加して判定する
+      const otherCategories = prev.filter(c => (c.group_id || c.groupId || 'local') !== activeGroup);
+      // ★ 制限：どのような場合でも1グループあたりのカテゴリは最大10個までに切り詰める
+      const safeUpdatedCategories = updatedActiveCategories.slice(0, 10);
+      return [...otherCategories, ...safeUpdatedCategories];
+    });
+
+    // ログイン中かつクラウドグループなら、データベースも更新
+    if (user && activeGroup !== 'local') {
+      try {
+        // 全カテゴリをループして更新（本来は変更されたものだけが理想ですが、まずは一括対応）
+        for (const cat of updatedActiveCategories) {
+          // cat.id がDBのUUID形式であることを想定
+          await db.updateCategory(cat.id, { name: cat.name });
+        }
+      } catch (error) {
+        console.error("Category update error:", error);
+      }
+    }
+  };
+
+  // 新規・編集の保存ボタンが押された時（今のグループに紐付ける）
+  const handleSaveLink = async (data) => {
+    // 1. 重複チェック（現在の表示グループ内のみ）
+    const isDuplicate = activeGroupLinks.some(link =>
       link.url === data.url && link.id !== (selectedLink?.id || null)
     );
+    if (isDuplicate && !window.confirm('このURLは既に登録されています。重複して登録しますか？')) return;
 
-    if (isDuplicate) {
-      if (!window.confirm('このURLは既に登録されています。重複して登録しますか？')) {
-        return; // キャンセルした場合は保存を中断
+    const isEditing = !!(selectedLink && selectedLink.id);
+
+    // ★重要：activeGroup が 'local' なら、ログイン状態に関わらず 100% ローカル処理
+    if (activeGroup === 'local') {
+      if (isEditing) {
+        // ローカル更新
+        setLinks(prev => prev.map(l => 
+          l.id === selectedLink.id ? { ...data, id: selectedLink.id, groupId: 'local', isCloud: false } : l
+        ));
+      } else {
+        // ローカル新規追加
+        const newLink = { 
+          ...data, 
+          id: Date.now().toString(), 
+          createdAt: new Date().toISOString(), 
+          groupId: 'local', 
+          isCloud: false 
+        };
+        setLinks(prev => [...prev, newLink]);
+      }
+    } 
+    // ★それ以外（UUID形式のグループID）かつ ログイン中ならクラウド処理
+    else if (user) {
+      try {
+        if (isEditing) {
+          const updated = await db.updateLink(selectedLink.id, {
+            title: data.title || '',
+            url: data.url || '',
+            shortMemo: data.shortMemo || '',
+            detailMemo: data.detailMemo || '',
+            browser: data.browser || '',
+            order: data.order || 10,
+            tags: data.tags || [],
+            isFavorite: !!data.isFavorite,
+            isHighlighted: !!data.isHighlighted,
+            category_id: data.categoryId // カテゴリ変更用
+          });
+          setLinks(prev => prev.map(l => l.id === selectedLink.id ? { ...updated, isCloud: true } : l));
+        } else {
+          const newLink = await db.insertLink({
+            title: data.title || '',
+            url: data.url || '',
+            shortMemo: data.shortMemo || '',
+            detailMemo: data.detailMemo || '',
+            browser: data.browser || '',
+            order: data.order || 10,
+            tags: data.tags || [],
+            isFavorite: !!data.isFavorite,
+            isHighlighted: !!data.isHighlighted,
+            group_id: activeGroup,
+            category_id: data.categoryId
+          });
+          setLinks(prev => [...prev, { ...newLink, isCloud: true }]);
+        }
+      } catch (error) {
+        console.error("Cloud save error:", error);
+        alert("クラウドへの保存に失敗しました。ID形式が正しくない可能性があります。");
+        return;
       }
     }
 
-    if (selectedLink && selectedLink.id) {
-      // 編集処理
-      setLinks(prev => prev.map(l => l.id === selectedLink.id ? { ...data, id: selectedLink.id } : l));
-    } else {
-      // 新規登録
-      const newLink = { ...data, id: Date.now().toString(), createdAt: new Date().toISOString() };
-      setLinks(prev => [...prev, newLink]);
-    }
     setIsFormOpen(false);
     setSelectedLink(null);
   };
 
-  // 削除ボタンが押された時
-  const handleDeleteLink = (id) => {
-    if (window.confirm('このリンクを削除してもよろしいですか？')) {
+  const handleDeleteLink = async (id) => {
+    if (!window.confirm('このリンクを削除してもよろしいですか？')) return;
+
+    if (user && activeGroup !== 'local') {
+      try {
+        await db.deleteLink(id);
+        setLinks(prev => prev.filter(l => l.id !== id));
+      } catch (error) {
+        alert("クラウドからの削除に失敗しました。");
+      }
+    } else {
+      // ローカル削除
       setLinks(prev => prev.filter(l => l.id !== id));
     }
   };
 
-  // 編集ボタンが押された時
   const handleEditClick = (link) => {
     setSelectedLink(link);
     setIsFormOpen(true);
@@ -124,21 +745,17 @@ function App() {
     setIsDetailOpen(true);
   };
 
-  // タグ検索にも対応したフィルタリング
-  const filteredLinks = links.filter(link => {
+  // ★検索フィルタの対象を「activeGroupLinks」に変更
+  const filteredLinks = activeGroupLinks.filter(link => {
     const query = searchQuery.toLowerCase();
-    
-    // フリーワードのチェック
-    const matchText = 
+    const matchText =
       link.title.toLowerCase().includes(query) ||
       (link.shortMemo || "").toLowerCase().includes(query) ||
       (link.tags && link.tags.some(tag => tag.toLowerCase().includes(query)));
-      
-    // タグ選択のチェック（選択されているタグを「すべて」含んでいるか。※AND検索）
-    const matchTags = selectedSearchTags.length === 0 || 
+
+    const matchTags = selectedSearchTags.length === 0 ||
       selectedSearchTags.every(selectedTag => link.tags && link.tags.includes(selectedTag));
 
-    // ワードとタグ両方の条件を満たせば表示
     return matchText && matchTags;
   });
 
@@ -147,7 +764,7 @@ function App() {
   return (
     <div className="app-container">
       <header className="app-header">
-        <h1>Link Master</h1>       
+        <h1>Link Master</h1>
         <div className="header-actions">
           {/* 文字を辞書対応 */}
           <button className="menu-btn" onClick={() => setIsMenuOpen(true)} style={{ position: 'relative' }}>
@@ -174,16 +791,19 @@ function App() {
             ========================================= */}
         <div className="control-bar">
           <div className="group-tabs">
-            <button 
-              className={`tab-btn ${activeGroup === 'local' ? 'active' : ''}`}
-              onClick={() => setActiveGroup('local')}
-            >
-              {t('localGroup')}
-            </button>
-            {/* ※ログイン機能実装後に、ここにグループ1〜5のタブが動的に並びます */}
+            {/* ★修正: groups ステートから自動でタブを生成 */}
+            {groups.map(group => (
+              <button
+                key={group.id}
+                className={`tab-btn ${activeGroup === group.id ? 'active' : ''}`}
+                onClick={() => setActiveGroup(group.id)}
+              >
+                {group.id === 'local' ? t('localGroup') : group.name}
+              </button>
+            ))}
           </div>
-          
-          <button 
+
+          <button
             className={`search-toggle-btn ${isSearchOpen ? 'active' : ''}`}
             onClick={() => setIsSearchOpen(!isSearchOpen)}
             title={t('search')}
@@ -198,9 +818,9 @@ function App() {
         {isSearchOpen && (
           <div className="search-panel">
             <div className="search-input-wrapper">
-              <input 
-                type="text" 
-                placeholder={t('searchPlaceholder')} 
+              <input
+                type="text"
+                placeholder={t('searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="search-input full-width"
@@ -209,12 +829,12 @@ function App() {
                 <button className="search-clear" onClick={() => setSearchQuery("")}>×</button>
               )}
             </div>
-            
+
             <div className="tag-filter-area">
               <span className="tag-filter-label">タグ検索:</span>
               <div className="tag-list">
                 {COMMON_TAGS.map(tag => (
-                  <button 
+                  <button
                     key={tag}
                     className={`filter-tag-btn ${selectedSearchTags.includes(tag) ? 'selected' : ''}`}
                     onClick={() => toggleSearchTag(tag)}
@@ -231,12 +851,12 @@ function App() {
             <h2 className="category-title">{t('favorites')}</h2>
             <div className="link-grid">
               {favoriteLinks.map(link => (
-                <LinkCard 
-                  key={link.id} 
-                  link={link} 
+                <LinkCard
+                  key={link.id}
+                  link={link}
                   onDetailClick={handleDetailClick}
-                  onEditClick={() => handleEditClick(link)} 
-                  onDeleteClick={() => handleDeleteLink(link.id)} 
+                  onEditClick={() => handleEditClick(link)}
+                  onDeleteClick={() => handleDeleteLink(link.id)}
                 />
               ))}
             </div>
@@ -244,33 +864,34 @@ function App() {
         )}
 
         {categories.sort((a, b) => a.order - b.order).map(category => {
+          // link.category_id (クラウド) と link.categoryId (ローカル) の両方に対応
           const categoryLinks = filteredLinks
-            .filter(link => link.categoryId === category.id)
-            .sort((a, b) => Number(a.order) - Number(b.order));
+            .filter(link => (link.category_id || link.categoryId) === category.id)
+            .sort((a, b) => Number(a.order || a.order_index || 0) - Number(b.order || b.order_index || 0));
 
           if (categoryLinks.length === 0) return null;
 
-          const isOpen = openCategories.includes(category.id);
+          const isOpen = !closedCategories.includes(category.id);
 
           return (
             <section key={category.id} className="category-section">
               {/* ★タイトルをクリック可能にし、アイコンと件数を表示 */}
-              <h2 
-                className={`category-title accordion-header ${isOpen ? 'is-open' : ''}`} 
+              <h2
+                className={`category-title accordion-header ${isOpen ? 'is-open' : ''}`}
                 onClick={() => toggleCategory(category.id)}
               >
                 <span className="arrow">{isOpen ? '▼' : '▶'}</span>
                 {category.name}
                 <span className="count">({categoryLinks.length})</span>
               </h2>
-              
+
               {/* ★isOpen が true の時だけリストを表示 */}
               {isOpen && (
                 <div className="link-grid">
                   {categoryLinks.map(link => (
-                    <LinkCard 
-                      key={link.id} 
-                      link={link} 
+                    <LinkCard
+                      key={link.id}
+                      link={link}
                       onDetailClick={handleDetailClick}
                       onEditClick={() => handleEditClick(link)}
                       onDeleteClick={() => handleDeleteLink(link.id)}
@@ -285,7 +906,7 @@ function App() {
 
       <footer className="app-footer">
         <div className="footer-content">
-          <a href="https://umeki-hub.vercel.app/" target="_blank" rel="noopener noreferrer" className="footer-link">総合サイト</a>
+          
           <span className="copyright">
             &copy; {new Date().getFullYear()} Umeki / LinkMaster. All rights reserved.
           </span>
@@ -296,23 +917,26 @@ function App() {
       <Modal isOpen={isDetailOpen} onClose={() => setIsDetailOpen(false)} title="詳細メモ">
         {selectedLink && (
           <div className="detail-memo-content">
-            <p style={{ whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>{selectedLink.detailMemo}</p>
+            {/* detail_memo (クラウド) と detailMemo (ローカル) の両方に対応 */}
+            <p style={{ whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>
+              {selectedLink.detail_memo || selectedLink.detailMemo}
+            </p>
           </div>
         )}
       </Modal>
 
       {/* 登録・編集用モーダル */}
-      <Modal 
-        isOpen={isFormOpen} 
-        onClose={() => setIsFormOpen(false)} 
+      <Modal
+        isOpen={isFormOpen}
+        onClose={() => setIsFormOpen(false)}
         title={selectedLink ? "リンクを編集" : "新規リンク登録"}
         contentClassName="menu-modal-content"
       >
-        <LinkFormModal 
-          isOpen={isFormOpen} 
-          onSubmit={handleSaveLink} 
+        <LinkFormModal
+          isOpen={isFormOpen}
+          onSubmit={handleSaveLink}
           initialData={selectedLink}
-          categories={categories} 
+          categories={activeGroupCategories} // activeGroupCategories を渡す
         />
       </Modal>
 
@@ -323,11 +947,22 @@ function App() {
         title="システムメニュー"
         contentClassName="menu-modal-content"
       >
-        <MenuModal 
-          links={links} 
-          onImport={handleImportData} 
-          categories={categories}       // カテゴリデータを渡す
-          setCategories={setCategories} // 更新用の関数を渡す
+        <MenuModal
+          links={links}
+          onImport={handleImportData}
+          categories={activeGroupCategories}       // カテゴリデータを渡す
+          setCategories={handleUpdateCategories} // 更新用の関数を渡す
+          groups={groups}
+          activeGroup={activeGroup}
+          onAddGroup={handleAddGroup}
+          onUpdateGroupName={handleUpdateGroupName}
+          onDeleteGroup={handleDeleteGroup}
+          onCopyGroup={handleCopyGroup}
+          onMoveGroupUp={handleMoveGroupUp}
+          onMoveGroupDown={handleMoveGroupDown}
+          onSetMainGroup={handleSetMainGroup}
+          onBackupLocalToCloud={handleBackupLocalToCloud}
+          onRestoreCloudToLocal={handleRestoreCloudToLocal}
         />
       </Modal>
     </div>

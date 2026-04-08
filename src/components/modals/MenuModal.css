@@ -109,18 +109,18 @@
   cursor: pointer;
 }
 
-/* ポリシーリンク群 */
-.policy-links {
+/* ポリシーリンク群とサイトリンク */
+.policy-links, .site-link {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
-.policy-links a {
+.policy-links a, .site-link a {
   color: #1a73e8;
   font-size: 0.9rem;
   text-decoration: none;
 }
-.policy-links a:hover {
+.policy-links a:hover, .site-link a:hover {
   text-decoration: underline;
 }
 
@@ -194,7 +194,7 @@
 .dark-mode .menu-section p { color: #aaa; }
 .dark-mode .account-status { background-color: #222; border-color: #444; color: #ddd; }
 .dark-mode .toggle-btn { background-color: #333; border-color: #555; color: #ddd; }
-.dark-mode .policy-links a { color: #64b5f6; }
+.dark-mode .policy-links a, .dark-mode .site-link a { color: #64b5f6; }
 .dark-mode .menu-action-btn { background-color: #333; border-color: #555; color: #ddd; }
 .dark-mode .menu-action-btn:hover { background-color: #444; }
 .dark-mode .usage-list li { color: #ccc; }
@@ -391,4 +391,54 @@
 .update-success-msg {
   color: #28a745;
   font-weight: bold;
+}
+
+/* --- グループ管理のデザイン --- */
+.group-management-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.group-active-indicator {
+  width: 15px;
+  color: #1a73e8;
+  font-weight: bold;
+}
+
+.group-actions {
+  display: flex;
+  gap: 5px;
+  margin-left: 10px;
+}
+
+.menu-action-btn.small-btn {
+  padding: 6px 10px;
+  font-size: 0.8rem;
+}
+
+.menu-action-btn.danger-btn {
+  color: #dc3545;
+  border-color: #dc3545;
+}
+.menu-action-btn.danger-btn:hover {
+  background-color: #dc3545;
+  color: white;
+}
+
+.add-group-area {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.menu-action-btn.add-btn {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  white-space: nowrap;
+}
+.menu-action-btn.add-btn:hover {
+  background-color: #218838;
 }
