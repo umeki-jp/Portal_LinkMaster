@@ -4,13 +4,14 @@ import { CATEGORIES } from '../../data/mockData';
 import { useSettings } from '../../contexts/SettingsContext';
 import { COMMON_TAGS } from '../../constants/languages';
 
-function LinkFormModal({ isOpen, onSubmit, initialData, categories }) {
+function LinkFormModal({ isOpen, onSubmit, initialData, allCategories, groups, activeGroup }) {
     const { t, language } = useSettings();
     // フォームの入力項目を管理するステート
     const [formData, setFormData] = useState({
         title: '',
         url: '',
-        categoryId: categories && categories.length > 0 ? categories[0].id : '',
+        groupId: activeGroup || 'local',
+        categoryId: '', 
         browser: '', // デフォルトを空欄に
         shortMemo: '',
         detailMemo: '',
@@ -20,26 +21,50 @@ function LinkFormModal({ isOpen, onSubmit, initialData, categories }) {
         order: 10
     });
 
+    const currentGroupId = formData.groupId || activeGroup || 'local';
+    const categoryOptions = allCategories 
+        ? allCategories.filter(c => (c.group_id || c.groupId || 'local') === currentGroupId)
+        : [];
+
     // 編集モードの場合、初期値をセットする
     useEffect(() => {
         if (initialData) {
+            const initGroupId = initialData.group_id || initialData.groupId || 'local';
             setFormData({
                 ...initialData,
+                groupId: initGroupId,
+                categoryId: initialData.category_id || initialData.categoryId || '',
                 browser: initialData.browser ?? '',
                 tags: initialData.tags ? initialData.tags.join(', ') : ''
             });
         } else {
             // 新規の場合はリセット（browserは空欄に固定）
+            const initGroupId = activeGroup || 'local';
+            const initCategories = allCategories ? allCategories.filter(c => (c.group_id || c.groupId || 'local') === initGroupId) : [];
             setFormData({
-                title: '', url: '', categoryId: categories && categories.length > 0 ? categories[0].id : '', browser: '',
+                title: '', url: '', 
+                groupId: initGroupId,
+                categoryId: initCategories.length > 0 ? initCategories[0].id : '', 
+                browser: '',
                 shortMemo: '', detailMemo: '', isFavorite: false,
                 isHighlighted: false, tags: '', order: 10
             });
         }
-    }, [initialData, isOpen, categories]);
+    }, [initialData, isOpen, activeGroup, allCategories]);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
+
+        if (name === 'groupId') {
+            const newCategories = allCategories ? allCategories.filter(c => (c.group_id || c.groupId || 'local') === value) : [];
+            setFormData(prev => ({
+                ...prev,
+                groupId: value,
+                categoryId: newCategories.length > 0 ? newCategories[0].id : ''
+            }));
+            return;
+        }
+
         setFormData(prev => ({
             ...prev,
             [name]: type === 'checkbox' ? checked : value
@@ -96,9 +121,21 @@ function LinkFormModal({ isOpen, onSubmit, initialData, categories }) {
 
     return (
         <form className="link-form" onSubmit={handleSubmit}>
-            <div className="form-group">
-                <label>{t('linkTitle')}</label>
-                <input type="text" name="title" value={formData.title} onChange={handleChange} maxLength="50" required />
+            <div className="form-row">
+                <div className="form-group" style={{ flex: 1.5 }}>
+                    <label>{t('linkTitle')}</label>
+                    <input type="text" name="title" value={formData.title} onChange={handleChange} maxLength="50" required />
+                </div>
+                <div className="form-group" style={{ flex: 1 }}>
+                    <label>{t('groupManagement') || 'グループ'}</label>
+                    <select name="groupId" value={formData.groupId} onChange={handleChange}>
+                    {groups && groups.map(g => (
+                        <option key={g.id} value={g.id}>
+                        {g.id === 'local' ? t('localGroup') : g.name}
+                        </option>
+                    ))}
+                    </select>
+                </div>
             </div>
 
             <div className="form-group">
@@ -110,9 +147,9 @@ function LinkFormModal({ isOpen, onSubmit, initialData, categories }) {
                 <div className="form-group">
                     <label>{t('category')}</label>
                     <select name="categoryId" value={formData.categoryId} onChange={handleChange}>
-                    {categories.map((cat, index) => (
+                    {categoryOptions.map((cat, index) => (
                         <option key={cat.id} value={cat.id}>
-                        {index + 1}: {cat.name}  {/* ★「1: システム（メイン）」のように表示 */}
+                        {index + 1}: {cat.name}
                         </option>
                     ))}
                     </select>

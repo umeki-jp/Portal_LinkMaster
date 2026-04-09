@@ -683,28 +683,31 @@ function App() {
 
   // 新規・編集の保存ボタンが押された時（今のグループに紐付ける）
   const handleSaveLink = async (data) => {
-    // 1. 重複チェック（現在の表示グループ内のみ）
-    const isDuplicate = activeGroupLinks.some(link =>
+    // 1. 重複チェック（保存先グループ内）
+    const targetGroupLinks = links.filter(link => (link.group_id || link.groupId || 'local') === data.groupId);
+    const isDuplicate = targetGroupLinks.some(link =>
       link.url === data.url && link.id !== (selectedLink?.id || null)
     );
     if (isDuplicate && !window.confirm('このURLは既に登録されています。重複して登録しますか？')) return;
 
     const isEditing = !!(selectedLink && selectedLink.id);
 
-    // ★重要：activeGroup が 'local' なら、ログイン状態に関わらず 100% ローカル処理
-    if (activeGroup === 'local') {
+    // ★重要：data.groupId が 'local' なら、ログイン状態に関わらず 100% ローカル処理
+    // または 未ログインなら強制的にローカル処理
+    if (!user || data.groupId === 'local') {
       if (isEditing) {
         // ローカル更新
         setLinks(prev => prev.map(l => 
-          l.id === selectedLink.id ? { ...data, id: selectedLink.id, groupId: 'local', isCloud: false } : l
+          l.id === selectedLink.id ? { ...data, id: selectedLink.id, groupId: data.groupId, categoryId: data.categoryId, isCloud: false } : l
         ));
       } else {
         // ローカル新規追加
         const newLink = { 
           ...data, 
-          id: Date.now().toString(), 
+          id: `local_link_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`, 
           createdAt: new Date().toISOString(), 
-          groupId: 'local', 
+          groupId: data.groupId, 
+          categoryId: data.categoryId,
           isCloud: false 
         };
         setLinks(prev => [...prev, newLink]);
@@ -724,6 +727,7 @@ function App() {
             tags: data.tags || [],
             isFavorite: !!data.isFavorite,
             isHighlighted: !!data.isHighlighted,
+            group_id: data.groupId,      // 追加
             category_id: data.categoryId // カテゴリ変更用
           });
           setLinks(prev => prev.map(l => l.id === selectedLink.id ? { ...updated, isCloud: true } : l));
@@ -738,7 +742,7 @@ function App() {
             tags: data.tags || [],
             isFavorite: !!data.isFavorite,
             isHighlighted: !!data.isHighlighted,
-            group_id: activeGroup,
+            group_id: data.groupId,
             category_id: data.categoryId
           });
           setLinks(prev => [...prev, { ...newLink, isCloud: true }]);
@@ -979,7 +983,9 @@ function App() {
           isOpen={isFormOpen}
           onSubmit={handleSaveLink}
           initialData={selectedLink}
-          categories={activeGroupCategories} // activeGroupCategories を渡す
+          allCategories={categories}
+          groups={groups}
+          activeGroup={activeGroup}
         />
       </Modal>
 
