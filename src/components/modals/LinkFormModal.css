@@ -172,4 +172,17 @@ body.dark-mode .preset-tag-btn.selected {
     flex-direction: column; /* 常に縦並びにし、横にはみ出さないようにする */
     gap: 15px;
   }
+  
+  .form-checkbox-group {
+    flex-direction: column; /* チェックボックスも縦並びに */
+    gap: 10px;
+  }
+
+  .order-inline-group {
+    flex-wrap: wrap; /* 表示順の入力と注釈がはみ出さないように折り返す */
+  }
+
+  .order-note {
+    white-space: normal; /* 文字がはみ出たら折り返す */
+  }
 }

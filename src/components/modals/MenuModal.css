@@ -147,6 +147,50 @@
 }
 .menu-action-btn.export:hover { background-color: #218838; }
 
+/* =========================================
+   データ管理のボタングループ
+   ========================================= */
+.data-action-group {
+  display: flex;
+  flex-wrap: wrap; /* スマホで横幅が足りなければ折り返す */
+  gap: 15px;       /* 隙間を持たせる */
+  margin-top: 10px;
+}
+
+/* buttonとlabelによる高さの差を無くす */
+.data-action-group .menu-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  margin: 0;
+  height: 42px; /* 固定高で形状を揃える */
+  line-height: 1;
+}
+
+/* クラウド操作ボタン群 */
+.restore-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.restore-controls select,
+.restore-controls .menu-action-btn {
+  height: 42px; /* 立幅を揃える */
+  box-sizing: border-box;
+  margin: 0;
+}
+
+/* スマホ用ボタン調整 */
+@media (max-width: 600px) {
+  .restore-controls select {
+    width: 100%; /* スマホではセレクトボックスを幅いっぱいに */
+  }
+}
+
 /* 使い方リスト */
 .usage-list { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; }
 .usage-list li { color: #444; font-size: 0.9rem; line-height: 1.5; list-style: none; display: flex; gap: 8px; }
@@ -201,6 +245,30 @@
     width: 100%;
     box-sizing: border-box;
     overflow-x: hidden; /* 横スクロールしないように */
+  }
+
+  /* グループ管理：スマホ時は縦並びにする */
+  .group-edit-row {
+    flex-direction: column; /* 縦並び */
+    align-items: flex-start; /* ★ストレッチや中央寄せをやめて、左寄せにする */
+    gap: 10px;
+    border-bottom: 1px dashed #ccc; /* 区切り線 */
+    padding-bottom: 15px;
+  }
+  
+  .group-edit-main {
+    width: 100%; /* スマホ時は入力枠エリアを幅いっぱいに */
+    justify-content: flex-start;
+  }
+  
+  .dark-mode .group-edit-row {
+    border-bottom-color: #444;
+  }
+
+  .group-actions {
+    margin-left: 20px; /* 上の▶に合わせて少し字下げ */
+    justify-content: flex-start;
+    flex-wrap: wrap; /* スマホの極端に狭い画面では流石に折り返しを許可する */
   }
 }
 
@@ -419,20 +487,46 @@
 .group-management-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 15px; /* 行間の余白を広めにとる */
   margin-bottom: 15px;
+}
+
+.group-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 10px 0; /* 縦の隙間のみ設定し、横の隙間はボタン側のmarginで代用する */
+  flex-wrap: wrap; /* 画面が狭い時に「入力枠」と「ボタン群」の単位で一緒に下段へ落とす */
+}
+
+.group-edit-main {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: 240px; /* ボタンの文字数に依存せず、すべての行で入力枠の幅を統一する */
+  flex-shrink: 0; /* 画面縮小時でもこれ以上縮まないようにする(最低幅の役割) */
 }
 
 .group-active-indicator {
   width: 15px;
   color: #1a73e8;
   font-weight: bold;
+  flex-shrink: 0;
 }
 
 .group-actions {
   display: flex;
-  gap: 5px;
-  margin-left: 10px;
+  flex-wrap: nowrap; /* ボタンが1個ずつ落ちるのを防ぐ（ひとかたまりで維持） */
+  gap: 8px; /* ボタン間の隙間 */
+  margin-left: 20px; /* ★常に「▶(15px)」＋「gap(5px)」＝20px分だけ字下げする。これで下段に落ちても入力枠の左端と揃う */
+}
+
+/* メイン設定ボタン：文字数による幅のガタつきを防ぐ */
+.main-toggle-btn {
+  width: 90px; /* 少し小さめに調整 */
+  padding-left: 5px;
+  padding-right: 5px;
+  text-align: center;
+  box-sizing: border-box;
 }
 
 .menu-action-btn.small-btn {
@@ -447,6 +541,12 @@
 .menu-action-btn.danger-btn:hover {
   background-color: #dc3545;
   color: white;
+}
+
+.add-group-row {
+  margin-top: 20px;
+  border-top: 2px solid #eee;
+  padding-top: 15px;
 }
 
 .add-group-area {

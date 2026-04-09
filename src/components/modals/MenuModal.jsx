@@ -10,7 +10,7 @@ import googleSignInImg from '../../assets/images/web_light_sq_SI@3x.png';
 
 function MenuModal({ 
   links, onImport, categories, setCategories,
-  groups, activeGroup, onAddGroup, onUpdateGroupName, onDeleteGroup, onCopyGroup, onMoveGroupUp, onMoveGroupDown, onSetMainGroup,
+  groups, activeGroup, setActiveGroup, onAddGroup, onUpdateGroupName, onDeleteGroup, onCopyGroup, onMoveGroupUp, onMoveGroupDown, onSetMainGroup,
   onBackupLocalToCloud, onRestoreCloudToLocal
 }) {
   const { t, isDarkMode, setIsDarkMode, language, setLanguage } = useSettings();
@@ -394,24 +394,26 @@ function MenuModal({
                     <div className="group-management-list">
                       {groups.map((group, index) => (
                         <div key={group.id} className="group-edit-row">
-                          <span className="group-active-indicator">{group.id === activeGroup ? '▶' : ''}</span>
-                          <input
-                            type="text"
-                            value={group.id === 'local' ? t('localGroup') : group.name}
-                            onChange={(e) => onUpdateGroupName(group.id, e.target.value)}
-                            disabled={group.id === 'local'}
-                            className="login-input"
-                            style={{ flex: 1 }}
-                          />
+                          <div className="group-edit-main">
+                            <span className="group-active-indicator">{group.id === activeGroup ? '▶' : ''}</span>
+                            <input
+                              type="text"
+                              value={group.id === 'local' ? t('localGroup') : group.name}
+                              onChange={(e) => onUpdateGroupName(group.id, e.target.value)}
+                              disabled={group.id === 'local'}
+                              className="login-input"
+                              style={{ flex: 1 }}
+                            />
+                          </div>
                           {group.id !== 'local' && (
                             <div className="group-actions">
                               {/* ログイン中かつ、ブラウザ版(local)でなければボタンを表示 */}
                                 {user && group.id !== 'local' && (
                                   <button 
-                                    className={`menu-action-btn small-btn ${group.is_main ? 'main-active' : ''}`} 
+                                    className={`menu-action-btn small-btn main-toggle-btn ${group.is_main ? 'main-active' : ''}`} 
                                     onClick={() => onSetMainGroup(group.id)}
                                   >
-                                    {group.is_main ? '★ ' + (t('mainGroup') || 'メイン') : '☆ ' + (t('setMain') || 'メインに設定')}
+                                    {group.is_main ? '★ ' + (t('Main') || 'メイン') : '☆ ' + (t('setMain') || 'メインに設定')}
                                   </button>
                                 )}
                               {/* 上下移動ボタン */}
@@ -424,18 +426,26 @@ function MenuModal({
                         </div>
                       ))}
                     </div>
-                    
-                    <div className="add-group-area">
-                      <input 
-                        type="text" 
-                        value={newGroupName} 
-                        onChange={(e) => setNewGroupName(e.target.value)} 
-                        placeholder={t('newGroupNameHint')} 
-                        className="login-input"
-                      />
-                      <button className="menu-action-btn add-btn" onClick={handleAddNewGroup}>{t('addGroupBtn')}</button>
-                    </div>
-                  </>
+                      {/* --- 新規追加 --- */}
+                      <div className="add-group-row group-edit-row">
+                        <div className="group-edit-main">
+                          <span className="group-active-indicator"></span> {/* 上と開始位置を合わせるための空インジケータ */}
+                          <input
+                            type="text"
+                            value={newGroupName}
+                            onChange={(e) => setNewGroupName(e.target.value)}
+                            placeholder={t('newGroupNameHint')}
+                            className="login-input"
+                            style={{ flex: 1 }}
+                          />
+                        </div>
+                        <div className="group-actions">
+                          <button className="menu-action-btn primary-btn add-group-btn" onClick={handleAddNewGroup}>
+                            {t('addGroupBtn')}
+                          </button>
+                        </div>
+                      </div>
+                    </>
                 ) : (
                   // --- ログインしていない場合 ---
                   <div style={{ padding: '20px', textAlign: 'center', backgroundColor: '#f8f9fa', border: '1px solid #ddd', borderRadius: '4px' }}>
@@ -450,9 +460,23 @@ function MenuModal({
           {activeTab === 'category' && (
             <div className="menu-tab-pane animate-fade-in">
               <section className="menu-section">
-                <h3 style={{ borderBottom: '1px solid #ddd', paddingBottom: '8px', marginBottom: '15px' }}>
-                  {t('categorySettingsTitle')} <span style={{fontSize: '0.8rem', color: '#666'}}>({groups.find(g => g.id === activeGroup)?.name || t('localGroup')})</span>
-                </h3>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #ddd', paddingBottom: '8px', marginBottom: '15px' }}>
+                  <h3 style={{ margin: 0 }}>
+                    {t('categorySettingsTitle')}
+                  </h3>
+                  <select 
+                    value={activeGroup} 
+                    onChange={(e) => setActiveGroup(e.target.value)}
+                    className="login-input"
+                    style={{ width: 'auto', padding: '4px 8px', fontSize: '0.9rem', marginBottom: 0 }}
+                  >
+                    {groups.map(g => (
+                      <option key={g.id} value={g.id}>
+                        {g.id === 'local' ? t('localGroup') : g.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 
                 <div className="category-edit-list">
                   {localCategories.map((cat, index) => (

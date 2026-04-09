@@ -266,10 +266,22 @@ button.menu-btn {
   white-space: nowrap;
 }
 
-/* 狭い画面ではフッターが2段になりやすいので本文下余白を少し増やす */
+/* =========================================
+   レスポンシブ対応
+   ========================================= */
 @media (max-width: 700px) {
+  /* スマホ時はフッターが固定されないため、余分な下部余白を減らす */
   .app-main {
-    padding-bottom: 120px;
+    padding-bottom: 20px;
+  }
+  
+  /* フッターの固定を解除し、コンテンツの最後（下）に配置する */
+  .app-footer {
+    position: static;
+    transform: none;
+    width: 100%;
+    margin-top: 30px;
+    border-radius: 8px; /* 枠に収まるので少し角を丸く */
   }
   /* モバイル表示用の制御クラス */
   .hide-on-mobile {

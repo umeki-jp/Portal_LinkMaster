@@ -30,14 +30,9 @@ function Modal({ isOpen, onClose, title, children, contentClassName = '' }) {
 
   // スワイプダウン（下に引っ張る）で閉じる処理
   const handleTouchStart = (e) => {
-    // コンテンツがスクロール可能な場合、最上部にいる時だけ引っ張りを許可
-    const scrollTop = contentRef.current ? contentRef.current.scrollTop : 0;
-    if (scrollTop <= 1) { // 1px以下のズレまで許容
-      startY.current = e.touches[0].clientY;
-      isDragging.current = true;
-    } else {
-      isDragging.current = false;
-    }
+    // ヘッダーやスワイプバーのエリアを触った時のみ許可する
+    startY.current = e.touches[0].clientY;
+    isDragging.current = true;
   };
 
   const handleTouchMove = (e) => {
@@ -57,8 +52,8 @@ function Modal({ isOpen, onClose, title, children, contentClassName = '' }) {
     if (!isDragging.current) return;
     isDragging.current = false;
     
-    // 100px 以上下に引っ張られたら閉じる
-    if (translateY > 100) {
+    // 120px 以上下に引っ張られたら閉じる（少し基準を緩める）
+    if (translateY > 120) {
       onClose();
     } else {
       // 届かなければ元の位置へスッと戻る
@@ -67,27 +62,34 @@ function Modal({ isOpen, onClose, title, children, contentClassName = '' }) {
   };
 
   return (
-    <div className="modal-overlay">
+    <div className="modal-overlay" onClick={onClose}>
       {/* 白い枠の中をクリックした時は、裏の黒背景までクリック判定が貫通しないようにストップする */}
       <div 
         className={modalContentClassName} 
         onClick={(e) => e.stopPropagation()}
         ref={contentRef}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
         style={{ 
           transform: `translateY(${translateY}px)`, 
           transition: isDragging.current ? 'none' : 'transform 0.3s ease-out' 
         }}
       >
-        {/* スマホ用の「下に引っ張れる」ことを示すバー */}
-        <div className="swipe-bar" onClick={onClose} title="閉じる"></div>
+        {/* ----- ドラッグ可能エリア ----- */}
+        <div 
+          className="modal-drag-area"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          style={{ cursor: 'grab', paddingBottom: '5px' }} /* ヘッダー周辺にタッチ判定を限定 */
+        >
+          {/* スマホ用の「下に引っ張れる」ことを示すバー */}
+          <div className="swipe-bar" onClick={onClose} title="閉じる"></div>
 
-        <div className="modal-header">
-          <h2>{title}</h2>
-          <button className="close-button" onClick={onClose}>×</button>
+          <div className="modal-header">
+            <h2>{title}</h2>
+            <button className="close-button" onClick={onClose}>×</button>
+          </div>
         </div>
+        {/* --------------------------- */}
         <div className="modal-body">
           {/* ここに詳細メモや入力フォームなど、各画面の中身が入ります */}
           {children}

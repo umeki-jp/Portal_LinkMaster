@@ -189,6 +189,7 @@ function App() {
   };
 
   const [closedCategories, setClosedCategories] = useState([]);
+  const [draggedGroupIndex, setDraggedGroupIndex] = useState(null);
   const toggleCategory = (categoryId) => {
     setClosedCategories(prev => prev.includes(categoryId) ? prev.filter(id => id !== categoryId) : [...prev, categoryId]);
   };
@@ -473,6 +474,43 @@ function App() {
         }
       });
     }
+  };
+
+  // ドラッグ＆ドロップ用ハンドラー
+  const handleGroupDragStart = (e, index) => {
+    setDraggedGroupIndex(index);
+    e.dataTransfer.setData('text/plain', index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleGroupDragOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleGroupDrop = (e, dropIndex) => {
+    e.preventDefault();
+    if (draggedGroupIndex === null || draggedGroupIndex === dropIndex) return;
+
+    const newGroups = [...groups];
+    const draggedItem = newGroups.splice(draggedGroupIndex, 1)[0];
+    newGroups.splice(dropIndex, 0, draggedItem);
+
+    setGroups(newGroups);
+    setDraggedGroupIndex(null);
+
+    // クラウド環境であれば、並び替え後の順序(order_index)を全更新する
+    if (user) {
+      newGroups.forEach((g, i) => {
+        if (g.isCloud && g.id !== 'local' && !g.id.startsWith('group_')) {
+          db.updateGroup(g.id, { order_index: i }).catch(err => console.error("Order move error:", err));
+        }
+      });
+    }
+  };
+
+  const handleGroupDragEnd = () => {
+    setDraggedGroupIndex(null);
   };
 
   // ブラウザ版 ➔ クラウドへのコピー（バックアップ/初期同期）
@@ -791,11 +829,17 @@ function App() {
         <div className="control-bar">
           <div className="group-tabs">
             {/* ★修正: groups ステートから自動でタブを生成 */}
-            {groups.map(group => (
+            {groups.map((group, index) => (
               <button
                 key={group.id}
-                className={`tab-btn ${activeGroup === group.id ? 'active' : ''}`}
+                className={`tab-btn ${activeGroup === group.id ? 'active' : ''} ${draggedGroupIndex === index ? 'dragging' : ''}`}
                 onClick={() => setActiveGroup(group.id)}
+                draggable
+                onDragStart={(e) => handleGroupDragStart(e, index)}
+                onDragOver={handleGroupDragOver}
+                onDrop={(e) => handleGroupDrop(e, index)}
+                onDragEnd={handleGroupDragEnd}
+                style={{ opacity: draggedGroupIndex === index ? 0.5 : 1 }}
               >
                 {group.id === 'local' ? t('localGroup') : group.name}
               </button>
@@ -953,6 +997,7 @@ function App() {
           setCategories={handleUpdateCategories} // 更新用の関数を渡す
           groups={groups}
           activeGroup={activeGroup}
+          setActiveGroup={setActiveGroup}
           onAddGroup={handleAddGroup}
           onUpdateGroupName={handleUpdateGroupName}
           onDeleteGroup={handleDeleteGroup}
