@@ -54,6 +54,8 @@
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 1rem;
+  width: 100%;
+  box-sizing: border-box; /* はみ出し防止 */
 }
 
 .form-checkbox-group {
@@ -160,4 +162,14 @@ body.dark-mode .preset-tag-btn.selected {
   background-color: #e40000;
   color: white;
   border-color: #e40000;
+}
+
+/* =========================================
+   レスポンシブ対応（スマホ画面）
+   ========================================= */
+@media (max-width: 600px) {
+  .form-row {
+    flex-direction: column; /* 常に縦並びにし、横にはみ出さないようにする */
+    gap: 15px;
+  }
 }

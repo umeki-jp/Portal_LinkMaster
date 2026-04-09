@@ -20,8 +20,15 @@
   width: 90%;
   max-width: 600px;
   max-height: 90vh;
+  box-sizing: border-box; /* padding分のはみ出しを防止 */
   overflow-y: auto; /* 詳細メモなどが長くなった場合は自動でスクロールバーを出す */
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overscroll-behavior-y: none; /* スマホブラウザのプルリフレッシュを防ぐ */
+}
+
+/* スワイプで閉じれるよ、というマーク（バー）はPCでは非表示 */
+.swipe-bar {
+  display: none;
 }
 
 .modal-content.menu-modal-content {
@@ -91,4 +98,19 @@ body.dark-mode .close-button {
 
 body.dark-mode .close-button:hover {
   color: #fff;
+}
+
+/* =========================================
+   レスポンシブ対応（スマホ画面）
+   ========================================= */
+@media (max-width: 700px) {
+  .swipe-bar {
+    display: block;
+    width: 40px;
+    height: 5px;
+    background-color: #ccc;
+    border-radius: 3px;
+    margin: -10px auto 15px auto; /* 枠の上のほうに置く */
+    cursor: pointer;
+  }
 }
