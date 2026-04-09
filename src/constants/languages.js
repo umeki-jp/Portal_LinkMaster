@@ -13,6 +13,7 @@ export const LANGUAGES = {
     edit: "編集",
     delete: "削除",
     close: "閉じる",
+    detail: "詳細",
     urlCopied: "URLをコピーしました！",
     copyUrlBtn: "URLコピー",
 
@@ -103,7 +104,7 @@ export const LANGUAGES = {
     tagsMaxLength: "タグは合計で100文字以内にしてください。",
     urlFormatError: "URLは http:// または https:// から入力してください。",
     linkTitle: "リンク名称",
-    urlKey: "URL",
+    urlKey: "🌏URL",
     recBrowser: "推奨ブラウザ",
     selectRecBrowser: "-- 選択してください --",
     shortMemoLabel: "簡易メモ（一覧に表示）",
@@ -129,6 +130,7 @@ export const LANGUAGES = {
     edit: "Edit",
     delete: "Delete",
     close: "Close",
+    detail: "Detail",
     urlCopied: "URL copied!",
     copyUrlBtn: "Copy URL",
 
@@ -218,7 +220,7 @@ export const LANGUAGES = {
     tagsMaxLength: "Tags must be under 100 characters in total.",
     urlFormatError: "URL must start with http:// or https://",
     linkTitle: "Link Title",
-    urlKey: "URL",
+    urlKey: "🌏URL",
     recBrowser: "Recommended Browser",
     selectRecBrowser: "-- Select Browser --",
     shortMemoLabel: "Short Memo (List view)",

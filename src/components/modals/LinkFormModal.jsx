@@ -158,10 +158,22 @@ function LinkFormModal({ isOpen, onSubmit, initialData, allCategories, groups, a
                     <label>{t('recBrowser')}</label>
                     <select name="browser" value={formData.browser} onChange={handleChange}>
                         <option value="">{t('selectRecBrowser')}</option>
-                        <option value="Edge">Edge</option>
-                        <option value="Chrome">Chrome</option>
-                        <option value="Firefox">Firefox</option>
+
+                        {/* Main Browsers */}
+                        <option value="Edge">Microsoft Edge</option>
+                        <option value="Chrome">Google Chrome</option>
+                        <option value="Firefox">Mozilla Firefox</option>
                         <option value="Safari">Safari</option>
+
+                        {/* Developer Browsers */}
+                        <option value="Brave">Brave</option>
+                        <option value="Vivaldi">Vivaldi</option>
+                        <option value="Opera">Opera</option>
+                        <option value="OperaGX">Opera GX</option>
+                        <option value="Chromium">Chromium</option>
+
+                        {/* Legacy */}
+                        <option value="IE">Internet Explorer (Legacy)</option>
                     </select>
                 </div>
             </div>
