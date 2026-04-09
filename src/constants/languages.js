@@ -24,7 +24,7 @@ export const LANGUAGES = {
     groupEdit: "グループ編集",
     groupCopy: "グループコピー",
     favorites: "★ よく使う（お気に入り）",
-    groupManagement: "グループ管理",
+    groupManagement: "👥グループ管理",
     addGroupBtn: "＋ 新規追加",
     copyGroupBtn: "複製",
     deleteGroupBtn: "削除",
@@ -37,6 +37,7 @@ export const LANGUAGES = {
     searchPlaceholder: "フリーワードまたはタグで検索...",
     tagsMaster: "タグ一覧",
     selectTags: "タグを選択",
+    presetTagSearch: "プリセットタグ検索",
 
     // メニューモーダル用
     tabSystem: "⚙️ システム",
@@ -72,7 +73,7 @@ export const LANGUAGES = {
     dataRestoreDesc: "保存済みのJSONファイルを読み込みます。",
     jsonImport: "JSONインポート",
     
-    categorySettingsTitle: "カテゴリ設定",
+    categorySettingsTitle: "📁カテゴリ設定",
     categoryNamePlaceholder: "カテゴリ名（空欄も可）",
     categoryEditHint: "※「更新する」ボタンを押すまで保存されません。",
     updateBtn: "更新する",
@@ -99,7 +100,7 @@ export const LANGUAGES = {
     // リンクフォーム用
     titleUrlRequired: "リンク名称とURLは必須項目です。",
     titleMaxLength: "リンク名称は50文字以内で入力してください。",
-    tagsMaxLength: "タグは合計で30文字以内にしてください。",
+    tagsMaxLength: "タグは合計で100文字以内にしてください。",
     urlFormatError: "URLは http:// または https:// から入力してください。",
     linkTitle: "リンク名称",
     urlKey: "URL",
@@ -139,7 +140,7 @@ export const LANGUAGES = {
     groupEdit: "Edit Group",
     groupCopy: "Copy Group",
     favorites: "★ Favorites",
-    groupManagement: "Group Management",
+    groupManagement: "👥Group Management",
     addGroupBtn: "+ Add New",
     copyGroupBtn: "Copy",
     deleteGroupBtn: "Delete",
@@ -152,6 +153,7 @@ export const LANGUAGES = {
     searchPlaceholder: "Search by keyword or tags...",
     tagsMaster: "Tags Master",
     selectTags: "Select Tags",
+    presetTagSearch: "Preset Tag Search",
 
     // menu modal
     tabSystem: "⚙️ System",
@@ -187,7 +189,7 @@ export const LANGUAGES = {
     dataRestoreDesc: "Load a previously saved JSON file.",
     jsonImport: "Import JSON",
     
-    categorySettingsTitle: "Category Settings",
+    categorySettingsTitle: "📁Category Settings",
     categoryNamePlaceholder: "Category name (can be empty)",
     categoryEditHint: "*Changes are not saved until you click the Update button.",
     updateBtn: "Update",
@@ -213,7 +215,7 @@ export const LANGUAGES = {
     // Link Form
     titleUrlRequired: "Link title and URL are required.",
     titleMaxLength: "Link title must be under 50 characters.",
-    tagsMaxLength: "Tags must be under 30 characters in total.",
+    tagsMaxLength: "Tags must be under 100 characters in total.",
     urlFormatError: "URL must start with http:// or https://",
     linkTitle: "Link Title",
     urlKey: "URL",
@@ -233,19 +235,41 @@ export const LANGUAGES = {
 };
 
 // 全グループ共通のプリセットタグ一覧
-export const COMMON_TAGS = [
-  "重要",
-  "毎日",
-  "月曜",
-  "火曜",
-  "水曜",
-  "木曜",
-  "金曜",
-  "土曜",
-  "日曜",
-  "経理",
-  "総務",
-  "労務",
-  "営業",
-  "開発"
-];
+export const COMMON_TAGS = {
+  ja: [
+    "重要",
+    "毎日",
+    "月曜",
+    "火曜",
+    "水曜",
+    "木曜",
+    "金曜",
+    "土曜",
+    "日曜",
+    "経理",
+    "総務",
+    "労務",
+    "人事",
+    "営業",
+    "開発",
+    "ｼｽﾃﾑ"
+  ],
+  en: [
+    "Important",
+    "Daily",
+    "Mon",
+    "Tue",
+    "Wed",
+    "Thu",
+    "Fri",
+    "Sat",
+    "Sun",
+    "Accounting",
+    "General",
+    "Labor",
+    "HR",
+    "Sales",
+    "Dev",
+    "System"
+  ]
+};

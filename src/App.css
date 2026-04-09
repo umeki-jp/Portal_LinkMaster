@@ -271,6 +271,30 @@ button.menu-btn {
   .app-main {
     padding-bottom: 120px;
   }
+  /* モバイル表示用の制御クラス */
+  .hide-on-mobile {
+    display: none !important;
+  }
+  .show-on-mobile {
+    display: inline-block !important;
+  }
+
+  /* スマホ版ヘッダーボタンのサイズ調整 (.icon-btn と高さを揃える) */
+  .app-header button.add-btn,
+  .app-header button.menu-btn {
+    padding: 6px 10px;
+    min-width: auto; /* 余分な幅をとらない */
+    height: 34px; /* 他のアイコンボタンと高さを揃える */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+}
+
+/* PC等での初期状態 */
+.show-on-mobile {
+  display: none;
 }
 
 /* =========================================

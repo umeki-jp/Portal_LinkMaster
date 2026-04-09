@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import './LinkFormModal.css';
 import { CATEGORIES } from '../../data/mockData';
 import { useSettings } from '../../contexts/SettingsContext';
+import { COMMON_TAGS } from '../../constants/languages';
 
 function LinkFormModal({ isOpen, onSubmit, initialData, categories }) {
-    const { t } = useSettings();
+    const { t, language } = useSettings();
     // フォームの入力項目を管理するステート
     const [formData, setFormData] = useState({
         title: '',
@@ -45,6 +46,17 @@ function LinkFormModal({ isOpen, onSubmit, initialData, categories }) {
         }));
     };
 
+    const handleToggleTag = (tag) => {
+        setFormData(prev => {
+            const currentTags = prev.tags ? prev.tags.split(',').map(t => t.trim()).filter(t => t !== '') : [];
+            if (currentTags.includes(tag)) {
+                return { ...prev, tags: currentTags.filter(t => t !== tag).join(', ') };
+            } else {
+                return { ...prev, tags: [...currentTags, tag].join(', ') };
+            }
+        });
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
 
@@ -61,7 +73,7 @@ function LinkFormModal({ isOpen, onSubmit, initialData, categories }) {
         }
 
         // 3. タグの合計文字数チェック
-        if (formData.tags.length > 30) {
+        if (formData.tags.length > 100) {
             alert(t('tagsMaxLength'));
             return;
         }
@@ -129,7 +141,22 @@ function LinkFormModal({ isOpen, onSubmit, initialData, categories }) {
 
             <div className="form-group">
                 <label>{t('tagsLabel')}</label>
-                <input type="text" name="tags" value={formData.tags} onChange={handleChange} maxLength="30" placeholder={t('tagsPlaceholder')} />
+                <div className="tag-presets">
+                    {(COMMON_TAGS[language] || COMMON_TAGS.ja).map(tag => {
+                        const isSelected = formData.tags.split(',').map(t => t.trim()).includes(tag);
+                        return (
+                            <button 
+                                key={tag} 
+                                type="button" 
+                                className={`preset-tag-btn ${isSelected ? 'selected' : ''}`}
+                                onClick={() => handleToggleTag(tag)}
+                            >
+                                #{tag}
+                            </button>
+                        );
+                    })}
+                </div>
+                <input type="text" name="tags" value={formData.tags} onChange={handleChange} maxLength="100" placeholder={t('tagsPlaceholder')} />
             </div>
 
             <div className="form-checkbox-group">

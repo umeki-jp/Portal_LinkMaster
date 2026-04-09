@@ -131,26 +131,40 @@ function MenuModal({
     e.target.value = '';
   };
 
+  // --- タブ表示用ヘルパー: 先頭のアイコン(絵文字)と残りのテキストを分離 ---
+  const renderTab = (text) => {
+    if (!text) return null;
+    const chars = [...String(text)];
+    const icon = chars[0];
+    const rest = chars.slice(1).join('').trim();
+    return (
+      <span className="tab-inner">
+        <span className="tab-icon">{icon}</span>
+        <span className="tab-text"> {rest}</span>
+      </span>
+    );
+  };
+
   return (    
     <div className="menu-modal-layout">
       
       {/* --- 左側：サイドバー --- */}
       <div className="menu-sidebar">
         <button className={`menu-tab-btn ${activeTab === 'system' ? 'active' : ''}`} onClick={() => setActiveTab('system')}>
-          {t('tabSystem')}
+          {renderTab(t('tabSystem'))}
         </button>
         <button className={`menu-tab-btn ${activeTab === 'data' ? 'active' : ''}`} onClick={() => setActiveTab('data')}>
-          {t('tabData')}
+          {renderTab(t('tabData'))}
         </button>
         
         {/* グループ管理（ログイン必須の案内が出るタブ） */}
         <button className={`menu-tab-btn ${activeTab === 'group' ? 'active' : ''}`} onClick={() => setActiveTab('group')}>
-          {t('groupManagement')}
+          {renderTab(t('groupManagement'))}
         </button>
 
         {/* カテゴリ設定（常に表示されるタブ） */}
         <button className={`menu-tab-btn ${activeTab === 'category' ? 'active' : ''}`} onClick={() => setActiveTab('category')}>
-          {t('categorySettingsTitle') || 'カテゴリ設定'}
+          {renderTab(t('categorySettingsTitle') || '📁カテゴリ設定')}
         </button>
       </div>
 

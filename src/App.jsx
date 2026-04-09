@@ -32,8 +32,7 @@ function App() {
   const [groups, setGroups] = useState(() => {
     const saved = localStorage.getItem('portal_groups');
     let initialGroups = saved ? JSON.parse(saved).map(g => ({ ...g, isCloud: false })) : [
-      { id: 'local', name: 'ブラウザ版' },
-      { id: 'group1', name: 'グループ1' }
+      { id: 'local', name: 'ブラウザ版' }
     ];
     // localStorageが壊れていてlocalが消えている場合の保険
     if (!initialGroups.some(g => g.id === 'local')) {
@@ -65,8 +64,7 @@ function App() {
           const localLinks = savedLinks ? JSON.parse(savedLinks).map(l => ({ ...l, isCloud: false })) : INITIAL_LINKS;
           const localCats = savedCats ? JSON.parse(savedCats).map(c => ({ ...c, isCloud: false })) : CATEGORIES;
           let localGroups = savedGroups ? JSON.parse(savedGroups).map(g => ({ ...g, isCloud: false })) : [
-            { id: 'local', name: 'ブラウザ版' },
-            { id: 'group1', name: 'グループ1' }
+            { id: 'local', name: 'ブラウザ版' }
           ];
           if (!localGroups.some(g => g.id === 'local')) {
             localGroups = [{ id: 'local', name: 'ブラウザ版' }, ...localGroups];
@@ -94,8 +92,7 @@ function App() {
         const localLinks = savedLinks ? JSON.parse(savedLinks).map(l => ({ ...l, isCloud: false })) : INITIAL_LINKS;
         const localCats = savedCats ? JSON.parse(savedCats).map(c => ({ ...c, isCloud: false })) : CATEGORIES;
         let localGroups = savedGroups ? JSON.parse(savedGroups).map(g => ({ ...g, isCloud: false })) : [
-          { id: 'local', name: 'ブラウザ版' },
-          { id: 'group1', name: 'グループ1' }
+          { id: 'local', name: 'ブラウザ版' }
         ];
         if (!localGroups.some(g => g.id === 'local')) {
           localGroups = [{ id: 'local', name: 'ブラウザ版' }, ...localGroups];
@@ -768,11 +765,13 @@ function App() {
         <div className="header-actions">
           {/* 文字を辞書対応 */}
           <button className="menu-btn" onClick={() => setIsMenuOpen(true)} style={{ position: 'relative' }}>
-            {t('settings')}
+            <span className="hide-on-mobile">{t('settings')}</span>
+            <span className="show-on-mobile">⚙️</span>
             {user && <span className="online-badge" title="ログイン中"></span>}
           </button>
           <button className="add-btn" onClick={() => { setSelectedLink(null); setIsFormOpen(true); }}>
-            ＋ {t('addLink')}
+            <span className="hide-on-mobile">＋ {t('addLink')}</span>
+            <span className="show-on-mobile">＋</span>
           </button>
           {/* ダークモード切替ボタン */}
           <button className="icon-btn" onClick={() => setIsDarkMode(!isDarkMode)}>
@@ -831,9 +830,9 @@ function App() {
             </div>
 
             <div className="tag-filter-area">
-              <span className="tag-filter-label">タグ検索:</span>
+              <span className="tag-filter-label">{t('presetTagSearch')}</span>
               <div className="tag-list">
-                {COMMON_TAGS.map(tag => (
+                {(COMMON_TAGS[language] || COMMON_TAGS.ja).map(tag => (
                   <button
                     key={tag}
                     className={`filter-tag-btn ${selectedSearchTags.includes(tag) ? 'selected' : ''}`}

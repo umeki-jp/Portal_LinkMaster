@@ -5,7 +5,8 @@
   display: flex;
   height: 800px;
   width: 900px;
-  max-width: 95vw;
+  max-width: 100%; /* 95vwから100%に変更し、はみ出しを防ぐ */
+  box-sizing: border-box;
   gap: 20px;
 }
 
@@ -162,6 +163,10 @@
 @media (max-width: 600px) {
   .menu-modal-layout {
     flex-direction: column; /* 縦積みに変更 */
+    width: 100%;
+    height: auto;
+    max-height: 85vh; /* 画面に収める */
+    gap: 10px;
   }
   .menu-sidebar {
     flex: none;
@@ -169,16 +174,33 @@
     border-right: none;
     border-bottom: 2px solid #eee;
     padding-right: 0;
-    padding-bottom: 10px;
+    padding-bottom: 5px;
     overflow-x: auto; /* はみ出たらスクロール */
     white-space: nowrap;
+    width: 100%;
+    box-sizing: border-box;
+    justify-content: space-around; /* 均等に配置 */
   }
   .menu-tab-btn {
     text-align: center;
     border-radius: 8px 8px 0 0;
+    flex: 1;           /* 均等幅を割り当て */
+    padding: 10px 5px; /* 余白を少し削る */
   }
+  
+  /* スマホ時はアイコンのみ表示 */
+  .menu-tab-btn .tab-text {
+    display: none;
+  }
+  .menu-tab-btn .tab-icon {
+    font-size: 1.4rem; /* アイコンを大きめに */
+  }
+
   .menu-content-area {
     padding-right: 0;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden; /* 横スクロールしないように */
   }
 }
 

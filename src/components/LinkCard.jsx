@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import './LinkCard.css';
 import { useSettings } from '../contexts/SettingsContext';
 
 function LinkCard({ link, onDetailClick, onEditClick, onDeleteClick }) {
   // ★設定コンテキストから翻訳関数を取得
   const { t } = useSettings();
+  const [isExpanded, setIsExpanded] = useState(false);
 
   // URLをクリップボードにコピーする関数
   const copyUrl = (e) => {
@@ -17,7 +19,7 @@ function LinkCard({ link, onDetailClick, onEditClick, onDeleteClick }) {
 
   return (
     // クラス名を link-row に統一
-    <div className={`link-row ${link.isHighlighted ? 'highlighted' : ''}`}>
+    <div className={`link-row ${link.isHighlighted ? 'highlighted' : ''} ${isExpanded ? 'expanded' : ''}`}>
 
       {/* 1. タイトルとブラウザラベル（メイン情報） */}
       <div className="col-main">
@@ -35,26 +37,38 @@ function LinkCard({ link, onDetailClick, onEditClick, onDeleteClick }) {
         {link.isFavorite && <span className="fav-star">★</span>}
       </div>
 
-      {/* 2. 簡易メモ */}
-      <div className="col-memo">
-        <p className="short-memo">{link.shortMemo}</p>
-      </div>
+      {/* モバイル用展開ボタン (CSSでモバイル時のみ表示) */}
+      <button 
+        className="mobile-expand-btn" 
+        onClick={() => setIsExpanded(!isExpanded)}
+        title="詳細情報"
+      >
+        {isExpanded ? '▲' : '▼'}
+      </button>
 
-      {/* 3. タグ */}
-      <div className="col-tags">
-        <div className="tags-container">
-          {displayTags.map(tag => (
-            <span key={tag} className="tag-badge">{tag}</span>
-          ))}
+      {/* 展開ラッパー */}
+      <div className="link-details-wrapper">
+        {/* 2. 簡易メモ */}
+        <div className="col-memo">
+          <p className="short-memo">{link.shortMemo}</p>
         </div>
-      </div>
 
-      {/* 4. アクションボタン（右側に集約） */}
-      <div className="col-actions">
-        <button className="action-btn detail" onClick={() => onDetailClick(link)}>{t('detail')}</button>
-        <button className="action-btn copy" onClick={copyUrl}>{t('copyUrlBtn')}</button>
-        <button className="action-btn edit" onClick={() => onEditClick(link)}>{t('edit')}</button>
-        <button className="action-btn delete" onClick={() => onDeleteClick(link.id)} style={{ color: 'red' }}>{t('delete')}</button>
+        {/* 3. タグ */}
+        <div className="col-tags">
+          <div className="tags-container">
+            {displayTags.map(tag => (
+              <span key={tag} className="tag-badge">{tag}</span>
+            ))}
+          </div>
+        </div>
+
+        {/* 4. アクションボタン（右側に集約） */}
+        <div className="col-actions">
+          <button className="action-btn detail" onClick={() => onDetailClick(link)}>{t('detail')}</button>
+          <button className="action-btn copy" onClick={copyUrl}>{t('copyUrlBtn')}</button>
+          <button className="action-btn edit" onClick={() => onEditClick(link)}>{t('edit')}</button>
+          <button className="action-btn delete" onClick={() => onDeleteClick(link.id)} style={{ color: 'red' }}>{t('delete')}</button>
+        </div>
       </div>
     </div>
   );

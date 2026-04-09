@@ -113,3 +113,51 @@ body.dark-mode .save-btn {
 body.dark-mode .save-btn:hover {
   background-color: #cc0000;
 }
+
+/* =========================================
+   タグプリセット
+   ========================================= */
+.tag-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+
+.preset-tag-btn {
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  color: #333;
+  transition: all 0.2s ease;
+}
+
+.preset-tag-btn:hover {
+  background-color: #e0e0e0;
+}
+
+.preset-tag-btn.selected {
+  background-color: #1a73e8;
+  color: white;
+  border-color: #1a73e8;
+}
+
+/* Dark mode for tags */
+body.dark-mode .preset-tag-btn {
+  background-color: #3a3a3a;
+  border-color: #555;
+  color: #e0e0e0;
+}
+
+body.dark-mode .preset-tag-btn:hover {
+  background-color: #4a4a4a;
+}
+
+body.dark-mode .preset-tag-btn.selected {
+  background-color: #e40000;
+  color: white;
+  border-color: #e40000;
+}
