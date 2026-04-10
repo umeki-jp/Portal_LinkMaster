@@ -90,7 +90,7 @@ export const db = {
   // db.js
   async insertLink(linkData) {
     // UI用のフラグ (isCloud) だけ除外して、あとはDBへ直送
-    const { isCloud, ...dbPayload } = linkData;
+    const { isCloud: _, ...dbPayload } = linkData;
     
     const { data, error } = await supabase
       .from('lm_links')
@@ -103,7 +103,7 @@ export const db = {
   },
 
   async updateLink(id, updates) {
-    const { isCloud, ...dbPayload } = updates;
+    const { isCloud: _, ...dbPayload } = updates;
     const { data, error } = await supabase
       .from('lm_links')
       .update(dbPayload)
