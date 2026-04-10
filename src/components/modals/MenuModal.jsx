@@ -5,7 +5,7 @@ import { useSettings } from '../../contexts/SettingsContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 
-// ★ Googleログイン画像のインポート (ファイル名修正済み)
+// ★ Googleログイン画像のインポート
 import googleSignInImg from '../../assets/images/web_light_sq_SI@3x.png';
 
 function MenuModal({ 
@@ -426,7 +426,7 @@ function MenuModal({
                         </div>
                       ))}
                     </div>
-                      {/* --- 新規追加 --- */}
+                      {/* --- 新規 --- */}
                       <div className="add-group-row group-edit-row">
                         <div className="group-edit-main">
                           <span className="group-active-indicator"></span> {/* 上と開始位置を合わせるための空インジケータ */}

@@ -146,7 +146,7 @@ function App() {
     }
     
     if (currentGroupCats.length === 0) {
-      if (activeGroup === 'local' || activeGroup.startsWith('group_') || !user) { // ★!userを追加
+      if (activeGroup === 'local' || activeGroup.startsWith('group_') || !user) { 
         // ローカル版グループの場合はダミーIDで生成
         const newCats = Array.from({ length: 10 }).map((_, i) => ({
           id: activeGroup === 'local' ? `local_cat${i + 1}` : `${activeGroup}_cat${i + 1}`,
@@ -587,7 +587,7 @@ function App() {
     }
   };
 
-  // ★追加：クラウドグループ ➔ ブラウザ版への上書きコピー（リストア）
+  // クラウドグループ ➔ ブラウザ版への上書きコピー（リストア）
   const handleRestoreCloudToLocal = async (sourceGroupId) => {
     if (!user || !sourceGroupId) return;
 
@@ -662,7 +662,7 @@ function App() {
     setCategories(prev => {
       // クラウドデータの持つ group_id を追加して判定する
       const otherCategories = prev.filter(c => (c.group_id || c.groupId || 'local') !== activeGroup);
-      // ★ 制限：どのような場合でも1グループあたりのカテゴリは最大10個までに切り詰める
+      // どのような場合でも1グループあたりのカテゴリは最大10個までに切り詰める
       const safeUpdatedCategories = updatedActiveCategories.slice(0, 10);
       return [...otherCategories, ...safeUpdatedCategories];
     });
@@ -701,7 +701,7 @@ function App() {
           l.id === selectedLink.id ? { ...data, id: selectedLink.id, groupId: data.groupId, categoryId: data.categoryId, isCloud: false } : l
         ));
       } else {
-        // ローカル新規追加
+        // ローカル新規
         const newLink = { 
           ...data, 
           id: `local_link_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`, 
@@ -727,7 +727,7 @@ function App() {
             tags: data.tags || [],
             isFavorite: !!data.isFavorite,
             isHighlighted: !!data.isHighlighted,
-            group_id: data.groupId,      // 追加
+            group_id: data.groupId, 
             category_id: data.categoryId // カテゴリ変更用
           });
           setLinks(prev => prev.map(l => l.id === selectedLink.id ? { ...updated, isCloud: true } : l));
@@ -832,7 +832,7 @@ function App() {
             ========================================= */}
         <div className="control-bar">
           <div className="group-tabs">
-            {/* ★修正: groups ステートから自動でタブを生成 */}
+            {/* groups ステートから自動でタブを生成 */}
             {groups.map((group, index) => (
               <button
                 key={group.id}
@@ -989,7 +989,7 @@ function App() {
         />
       </Modal>
 
-      {/* メニュー用モーダルを追加 */}
+      {/* メニュー用モーダル */}
       <Modal
         isOpen={isMenuOpen}
         onClose={() => setIsMenuOpen(false)}

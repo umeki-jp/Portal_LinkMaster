@@ -2,7 +2,7 @@
 .link-row {
   display: flex;
   align-items: center;
-  height: 38px; /* ★【追加】1行の縦幅を固定 */
+  height: 38px; /* 1行の縦幅を固定 */
   padding: 0 15px; /* 上下のpaddingを0にして縦幅を安定させる */
   background-color: #fff;
   border-bottom: 1px solid #eee; /* 行間の区切り線 */
@@ -16,7 +16,7 @@
   background-color: #f9f9f9; /* ホバー時に行の色を変える */
 }
 
-/* ★【修正】強調表示フラグがある場合のデザイン */
+/* 強調表示フラグがある場合のデザイン */
 .link-row.highlighted {
   background-color: #fffaf0; /* 行全体を薄オレンジ色に */
   border-left: 4px solid #ff9800; /* 左側に強調の線を引く */
@@ -65,15 +65,15 @@
   margin: 0;
   font-size: 0.8rem;
   color: #666;
-  white-space: nowrap; /* ★【追加】絶対に1行にする */
-  overflow: hidden; /* ★【追加】はみ出したら隠す */
-  text-overflow: ellipsis; /* ★【追加】「...」にする */
+  white-space: nowrap; /* 絶対に1行にする */
+  overflow: hidden; /* はみ出したら隠す */
+  text-overflow: ellipsis; /* 「...」にする */
 }
 
 /* 列3: タグ（15%） */
 .col-tags {
   flex: 0 0 15%;
-  overflow: hidden; /* ★【追加】はみ出し対策 */
+  overflow: hidden; /* はみ出し対策 */
 }
 
 /* タグ専用のコンテナ */
@@ -81,7 +81,7 @@
   display: flex;
   gap: 5px;
   width: 100%; /* コンテナいっぱいに広げる */
-  overflow: hidden; /* ★【追加】はみ出したら隠す（絶対折り返さない） */
+  overflow: hidden; /* はみ出したら隠す（絶対折り返さない） */
 }
 
 /* 列4: ボタン類（残り全部 = 20%程度） */
@@ -139,7 +139,7 @@
 }
 
 /* =========================================
-   ★ 追加: ダークモード対応 (画面が暗い時の上書きスタイル)
+   ダークモード対応 (画面が暗い時の上書きスタイル)
    ========================================= */
 
 /* 行全体の背景と線 */

@@ -44,7 +44,7 @@ export const db = {
     return data;
   },
 
-  // ★追加: 特定のグループを「メイン」に設定し、他を解除する処理
+  // 特定のグループを「メイン」に設定し、他を解除する処理
   // SQLの制約(one_main_group_per_user)があるため、確実に1つにするための関数
   async setMainGroup(groupId) {
     // 1. まず自分の全グループの is_main を false にする
