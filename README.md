@@ -12,6 +12,19 @@
 
 ナレッジ共有と教育: プロジェクトや部署での共通リンク集として、用途や業務手順を含めて共有可能。新入社員のオンボーディング、業務引継ぎ、教育用ツールとしても最適です。 
 
+LinkMaster 🌏
+A ultra-fast, lightweight personal link management portal that runs entirely in your browser. 
+No database or server setup required. Start building and organizing your personal link collection instantly. 
+
+🚀 Problems LinkMaster Solves
+"My favorites are scattered across different browsers and accounts," "I have duplicate bookmarks everywhere," "I can't find the links I use most"—LinkMaster fundamentally solves these issues of information fragmentation. 
+
+Unified Management: Access your dedicated link collection from any device or browser. Manage all your information in one single place: LinkMaster. 
+
+Multi-layered Organization: Divide your links into "Groups" based on usage scenarios (Work, Private, Research, etc.), and further organize them with "Categories" and "Tags" for intuitive access. 
+
+Knowledge Sharing & Education: Share common link collections for projects or departments, including usage instructions and business procedures. It is ideal for new employee onboarding, handovers, and as an educational tool. 
+
 ## ✨ 主な機能
 - **カテゴリ管理:** 最大10枠のカテゴリを自由にリネームしてリンクを分類。
 - **柔軟な並び替え:** 表示順（order）の数値を設定することで、リストを思い通りに並び替え可能。
