@@ -1,19 +1,20 @@
 // src/contexts/SettingsContext.jsx
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LANGUAGES } from '../constants/languages';
+import { SettingsContext } from './settings-context';
+import { readStoredJson, readStoredString } from '../lib/storageRecovery';
 
-const SettingsContext = createContext();
+const isSupportedLanguage = (value) => Object.prototype.hasOwnProperty.call(LANGUAGES, value);
 
 export const SettingsProvider = ({ children }) => {
   // 1. 言語設定 (前回選んだ言語をブラウザに記憶。初回は日本語)
   const [language, setLanguage] = useState(() => {
-    return localStorage.getItem('u1344_language') || 'ja';
+    return readStoredString('u1344_language', 'ja', isSupportedLanguage);
   });
 
   // 2. ダークモード設定 (前回選んだ状態を記憶。初回はダークモードON)
   const [isDarkMode, setIsDarkMode] = useState(() => {
-    const savedMode = localStorage.getItem('u1344_dark_mode');
-    return savedMode !== null ? JSON.parse(savedMode) : true;
+    return readStoredJson('u1344_dark_mode', true, (value) => typeof value === 'boolean');
   });
 
   // 言語が変更されたらブラウザに保存
@@ -42,6 +43,3 @@ export const SettingsProvider = ({ children }) => {
     </SettingsContext.Provider>
   );
 };
-
-// 呼び出し用の便利フック
-export const useSettings = () => useContext(SettingsContext);

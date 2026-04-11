@@ -1,56 +1,50 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import './LinkFormModal.css';
-import { CATEGORIES } from '../../data/mockData';
-import { useSettings } from '../../contexts/SettingsContext';
+import { useSettings } from '../../hooks/useSettings';
 import { COMMON_TAGS } from '../../constants/languages';
+import { normalizeHttpUrl } from '../../lib/linkValidation';
 
-function LinkFormModal({ isOpen, onSubmit, initialData, allCategories, groups, activeGroup }) {
-    const { t, language } = useSettings();
-    // フォームの入力項目を管理するステート
-    const [formData, setFormData] = useState({
+const createInitialFormData = (initialData, activeGroup, allCategories) => {
+    if (initialData) {
+        const initGroupId = initialData.group_id || initialData.groupId || 'local';
+        return {
+            ...initialData,
+            groupId: initGroupId,
+            categoryId: initialData.category_id || initialData.categoryId || '',
+            browser: initialData.browser ?? '',
+            tags: initialData.tags ? initialData.tags.join(', ') : ''
+        };
+    }
+
+    const initGroupId = activeGroup || 'local';
+    const initCategories = allCategories
+        ? allCategories.filter(c => (c.group_id || c.groupId || 'local') === initGroupId)
+        : [];
+
+    return {
         title: '',
         url: '',
-        groupId: activeGroup || 'local',
-        categoryId: '', 
-        browser: '', // デフォルトを空欄に
+        groupId: initGroupId,
+        categoryId: initCategories.length > 0 ? initCategories[0].id : '',
+        browser: '',
         shortMemo: '',
         detailMemo: '',
         isFavorite: false,
         isHighlighted: false,
         tags: '',
         order: 10
-    });
+    };
+};
+
+function LinkFormModal({ onSubmit, initialData, allCategories, groups, activeGroup }) {
+    const { t, language } = useSettings();
+    // フォームの入力項目を管理するステート
+    const [formData, setFormData] = useState(() => createInitialFormData(initialData, activeGroup, allCategories));
 
     const currentGroupId = formData.groupId || activeGroup || 'local';
     const categoryOptions = allCategories 
         ? allCategories.filter(c => (c.group_id || c.groupId || 'local') === currentGroupId)
         : [];
-
-    // 編集モードの場合、初期値をセットする
-    useEffect(() => {
-        if (initialData) {
-            const initGroupId = initialData.group_id || initialData.groupId || 'local';
-            setFormData({
-                ...initialData,
-                groupId: initGroupId,
-                categoryId: initialData.category_id || initialData.categoryId || '',
-                browser: initialData.browser ?? '',
-                tags: initialData.tags ? initialData.tags.join(', ') : ''
-            });
-        } else {
-            // 新規の場合はリセット（browserは空欄に固定）
-            const initGroupId = activeGroup || 'local';
-            const initCategories = allCategories ? allCategories.filter(c => (c.group_id || c.groupId || 'local') === initGroupId) : [];
-            setFormData({
-                title: '', url: '', 
-                groupId: initGroupId,
-                categoryId: initCategories.length > 0 ? initCategories[0].id : '', 
-                browser: '',
-                shortMemo: '', detailMemo: '', isFavorite: false,
-                isHighlighted: false, tags: '', order: 10
-            });
-        }
-    }, [initialData, isOpen, activeGroup, allCategories]);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -104,7 +98,8 @@ function LinkFormModal({ isOpen, onSubmit, initialData, allCategories, groups, a
         }
 
         // 4. URL形式チェック
-        if (!formData.url.startsWith('http://') && !formData.url.startsWith('https://')) {
+        const normalizedUrl = normalizeHttpUrl(formData.url);
+        if (!normalizedUrl) {
             alert(t('urlFormatError'));
             return;
         }
@@ -112,6 +107,7 @@ function LinkFormModal({ isOpen, onSubmit, initialData, allCategories, groups, a
         // 保存用データの作成
         const processedData = {
             ...formData,
+            url: normalizedUrl,
             tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag !== ''),
             updatedAt: new Date().toISOString()
         };

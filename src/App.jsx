@@ -1,47 +1,131 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import './App.css';
 import { CATEGORIES, INITIAL_LINKS } from './data/mockData';
 import Modal from './components/common/Modal';
 import LinkCard from './components/LinkCard';
 import LinkFormModal from './components/modals/LinkFormModal';
 import MenuModal from './components/modals/MenuModal';
-import { useSettings } from './contexts/SettingsContext';
+import { useSettings } from './hooks/useSettings';
 import { COMMON_TAGS } from './constants/languages';
-import { useAuth } from './contexts/AuthContext';
+import { useAuth } from './hooks/useAuth';
 import { db } from './lib/db';
+import { sanitizeLinksForState } from './lib/linkValidation';
+import { MAX_IMPORT_LINK_COUNT, normalizeImportedData } from './lib/importValidation';
+import {
+  consumeStorageRecoveryNotices,
+  isValidStoredCategories,
+  isValidStoredGroups,
+  isValidStoredLinks,
+  readStoredJson,
+} from './lib/storageRecovery';
+
+const LOCAL_GROUP = { id: 'local', name: 'ブラウザ版' };
+
+const getLocalLinks = () => {
+  const parsedLinks = readStoredJson('portal_links', INITIAL_LINKS, isValidStoredLinks)
+    .map(l => ({ ...l, isCloud: false }));
+  return sanitizeLinksForState(parsedLinks);
+};
+
+const getLocalCategories = () => {
+  return readStoredJson('portal_categories', CATEGORIES, isValidStoredCategories)
+    .map(c => ({ ...c, isCloud: false }));
+};
+
+const getLocalGroups = () => {
+  let initialGroups = readStoredJson('portal_groups', [LOCAL_GROUP], isValidStoredGroups)
+    .map(g => ({ ...g, isCloud: false }));
+
+  if (!initialGroups.some(g => g.id === 'local')) {
+    initialGroups = [LOCAL_GROUP, ...initialGroups];
+  }
+
+  return initialGroups;
+};
 
 function App() {
   // ★設定コンテキストから「言語設定」と「翻訳関数」を呼び出す
   const { language, setLanguage, isDarkMode, setIsDarkMode, t } = useSettings();
   const { user } = useAuth();
+  const hasShownRecoveryNotice = useRef(false);
 
   // 1. 最初から「ブラウザ版」を選択状態にする
   const [activeGroup, setActiveGroup] = useState('local');
 
   // 2. 起動した瞬間に、localStorageからデータを直接読み込む（useEffectを待たない）
-  const [links, setLinks] = useState(() => {
-    const saved = localStorage.getItem('portal_links');
-    return saved ? JSON.parse(saved).map(l => ({ ...l, isCloud: false })) : INITIAL_LINKS;
-  });
+  const [links, setLinks] = useState(() => getLocalLinks());
 
-  const [categories, setCategories] = useState(() => {
-    const saved = localStorage.getItem('portal_categories');
-    return saved ? JSON.parse(saved).map(c => ({ ...c, isCloud: false })) : CATEGORIES;
-  });
+  const [categories, setCategories] = useState(() => getLocalCategories());
 
-  const [groups, setGroups] = useState(() => {
-    const saved = localStorage.getItem('portal_groups');
-    let initialGroups = saved ? JSON.parse(saved).map(g => ({ ...g, isCloud: false })) : [
-      { id: 'local', name: 'ブラウザ版' }
-    ];
-    // localStorageが壊れていてlocalが消えている場合の保険
-    if (!initialGroups.some(g => g.id === 'local')) {
-      initialGroups = [{ id: 'local', name: 'ブラウザ版' }, ...initialGroups];
-    }
-    return initialGroups;
-  });
+  const [groups, setGroups] = useState(() => getLocalGroups());
 
   const [isLoading, setIsLoading] = useState(false); // 初期値はfalseにしておく
+
+  const syncCloudState = useCallback(async () => {
+    const data = await db.fetchAll();
+
+    const cloudGroups = data.groups.map(g => ({ ...g, isCloud: true }));
+    const cloudCategories = data.categories.map(c => ({ ...c, isCloud: true }));
+    const cloudLinks = sanitizeLinksForState(data.links.map(l => ({ ...l, isCloud: true })));
+
+    const localLinks = getLocalLinks();
+    const localCats = getLocalCategories();
+    const localGroups = getLocalGroups();
+
+    setGroups([...localGroups, ...cloudGroups]);
+    setCategories([...localCats, ...cloudCategories]);
+    setLinks([...localLinks, ...cloudLinks]);
+
+    return { cloudGroups };
+  }, []);
+
+  const handleCloudMutationFailure = useCallback(async ({
+    error,
+    logMessage,
+    alertMessage,
+    rollback,
+  }) => {
+    console.error(logMessage, error);
+
+    if (typeof rollback === 'function') {
+      rollback();
+    }
+
+    try {
+      await syncCloudState();
+    } catch (syncError) {
+      console.error('Cloud resync failed:', syncError);
+    }
+
+    alert(alertMessage);
+  }, [syncCloudState]);
+
+  useEffect(() => {
+    if (hasShownRecoveryNotice.current) return;
+
+    const notices = consumeStorageRecoveryNotices();
+    if (notices.length === 0) return;
+
+    const storageLabels = {
+      portal_links: t('storageRecoveryLinksLabel'),
+      portal_categories: t('storageRecoveryCategoriesLabel'),
+      portal_groups: t('storageRecoveryGroupsLabel'),
+      u1344_language: t('storageRecoveryLanguageLabel'),
+      u1344_dark_mode: t('storageRecoveryThemeLabel'),
+    };
+
+    const detailLines = notices.map(({ key, backupKey }) => {
+      const label = storageLabels[key] || key;
+      return backupKey
+        ? `- ${label}: ${backupKey}`
+        : `- ${label}`;
+    });
+
+    hasShownRecoveryNotice.current = true;
+    alert(
+      `${t('storageRecoveryDetected')}\n\n${detailLines.join('\n')}\n\n${t('storageRecoveryBackupHint')}`
+    );
+  }, [t]);
 
   // A. 初期読込 & ログイン/ログアウト時のデータ切り替え
   useEffect(() => {
@@ -51,52 +135,24 @@ function App() {
       if (user) {
         // --- ☁️ ログイン中: クラウド(Supabase)から取得 ---
         try {
-          const data = await db.fetchAll();
+          const { cloudGroups } = await syncCloudState();
 
-          const cloudGroups = data.groups.map(g => ({ ...g, isCloud: true }));
-          const cloudCategories = data.categories.map(c => ({ ...c, isCloud: true }));
-          const cloudLinks = data.links.map(l => ({ ...l, isCloud: true }));
+          // アクティブなグループが未設定なら local か クラウドの最初のIDにする
+          setActiveGroup(prevActiveGroup => {
+            if (!prevActiveGroup || prevActiveGroup === '') {
+              return cloudGroups.length > 0 ? cloudGroups[0].id : 'local';
+            }
 
-          const savedLinks = localStorage.getItem('portal_links');
-          const savedCats = localStorage.getItem('portal_categories');
-          const savedGroups = localStorage.getItem('portal_groups');
-
-          const localLinks = savedLinks ? JSON.parse(savedLinks).map(l => ({ ...l, isCloud: false })) : INITIAL_LINKS;
-          const localCats = savedCats ? JSON.parse(savedCats).map(c => ({ ...c, isCloud: false })) : CATEGORIES;
-          let localGroups = savedGroups ? JSON.parse(savedGroups).map(g => ({ ...g, isCloud: false })) : [
-            { id: 'local', name: 'ブラウザ版' }
-          ];
-          if (!localGroups.some(g => g.id === 'local')) {
-            localGroups = [{ id: 'local', name: 'ブラウザ版' }, ...localGroups];
-          }
-
-          setGroups([...localGroups, ...cloudGroups]);
-          setCategories([...localCats, ...cloudCategories]);
-          setLinks([...localLinks, ...cloudLinks]);
-
-          // アクティブなグループが設定されていなければ local か クラウドの最初のIDにする
-          if (!activeGroup || (activeGroup === '' && cloudGroups.length === 0)) {
-            setActiveGroup('local');
-          } else if (activeGroup === '' && cloudGroups.length > 0) {
-            setActiveGroup(cloudGroups[0].id);
-          }
+            return prevActiveGroup;
+          });
         } catch (error) {
           console.error("Cloud fetch error:", error);
         }
       } else {
         // --- 💻 未ログイン: ローカルストレージ(ブラウザ版)から取得 ---
-        const savedLinks = localStorage.getItem('portal_links');
-        const savedCats = localStorage.getItem('portal_categories');
-        const savedGroups = localStorage.getItem('portal_groups');
-
-        const localLinks = savedLinks ? JSON.parse(savedLinks).map(l => ({ ...l, isCloud: false })) : INITIAL_LINKS;
-        const localCats = savedCats ? JSON.parse(savedCats).map(c => ({ ...c, isCloud: false })) : CATEGORIES;
-        let localGroups = savedGroups ? JSON.parse(savedGroups).map(g => ({ ...g, isCloud: false })) : [
-          { id: 'local', name: 'ブラウザ版' }
-        ];
-        if (!localGroups.some(g => g.id === 'local')) {
-          localGroups = [{ id: 'local', name: 'ブラウザ版' }, ...localGroups];
-        }
+        const localLinks = getLocalLinks();
+        const localCats = getLocalCategories();
+        const localGroups = getLocalGroups();
 
         setLinks(localLinks);
         setCategories(localCats);
@@ -107,7 +163,7 @@ function App() {
     };
 
     loadInitialData();
-  }, [user]);
+  }, [user, syncCloudState]);
 
   // B. ブラウザ版(Local)データの自動保存
   // ログインの有無に関わらず、読み込み完了後は常にローカルに最新を保持（爆速起動のため）
@@ -117,7 +173,7 @@ function App() {
       const localCatsToSave = categories.filter(c => !c.isCloud);
       const localGroupsToSave = groups.filter(g => !g.isCloud);
 
-      localStorage.setItem('portal_links', JSON.stringify(localLinksToSave));
+      localStorage.setItem('portal_links', JSON.stringify(sanitizeLinksForState(localLinksToSave)));
       localStorage.setItem('portal_categories', JSON.stringify(localCatsToSave));
       localStorage.setItem('portal_groups', JSON.stringify(localGroupsToSave));
     }
@@ -222,7 +278,7 @@ function App() {
         const newGroup = await db.insertGroup(groupName, groups.length);
         setGroups(prev => [...prev, { ...newGroup, isCloud: true }]);
         setActiveGroup(newGroup.id);
-      } catch (error) {
+      } catch {
         alert("クラウドへのグループ作成に失敗しました。");
       }
     } else {
@@ -235,6 +291,8 @@ function App() {
   };
 
   const handleUpdateGroupName = async (groupId, newName) => {
+    const previousGroups = groups;
+
     // UIのレスポンスを速くするため、まずは画面上の表示（state）を更新します
     setGroups(prev => prev.map(g => g.id === groupId ? { ...g, name: newName } : g));
 
@@ -244,8 +302,12 @@ function App() {
         // db.js の関数を使い、Supabaseのデータを書き換えます
         await db.updateGroup(groupId, { name: newName });
       } catch (error) {
-        console.error("クラウドのグループ名更新に失敗:", error);
-        // 必要に応じて、失敗時にStateを元に戻す処理を入れることも可能です
+        await handleCloudMutationFailure({
+          error,
+          logMessage: 'クラウドのグループ名更新に失敗:',
+          alertMessage: 'グループ名の保存に失敗しました。画面をクラウドの最新状態に戻しました。',
+          rollback: () => setGroups(previousGroups),
+        });
       }
     }
     // ※未ログイン時は、既存のuseEffect(B)がlocalStorageへ自動保存してくれます
@@ -310,7 +372,7 @@ function App() {
         setGroups(prev => prev.filter(g => g.id !== groupId));
         setCategories(prev => prev.filter(c => (c.group_id || c.groupId) !== groupId));
         setLinks(prev => prev.filter(l => (l.group_id || l.groupId) !== groupId));
-      } catch (error) {
+      } catch {
         alert("クラウドからの削除に失敗しました。");
       }
     } else {
@@ -375,14 +437,14 @@ function App() {
             order: i + 1
           });
         });
-        const insertedLinks = await Promise.all(newLinksPromises);
+        await Promise.all(newLinksPromises);
 
         // 4. ステートを直接更新せず、DBから最新状態を再取得して同期する（二重表示防止）
         const freshData = await db.fetchAll();
 
         const cloudGroups = freshData.groups.map(g => ({ ...g, isCloud: true }));
         const cloudCategories = freshData.categories.map(c => ({ ...c, isCloud: true }));
-        const cloudLinks = freshData.links.map(l => ({ ...l, isCloud: true }));
+        const cloudLinks = sanitizeLinksForState(freshData.links.map(l => ({ ...l, isCloud: true })));
 
         // ローカルは維持し、クラウド分だけ最新にリフレッシュ
         setGroups(prev => [...prev.filter(g => !g.isCloud), ...cloudGroups]);
@@ -439,6 +501,7 @@ function App() {
   // グループを1つ上へ移動する処理
   const handleMoveGroupUp = (index) => {
     if (index === 0) return; // すでに一番上の場合は何もしない
+    const previousGroups = groups;
     const newGroups = [...groups];
     const temp = newGroups[index - 1];
     newGroups[index - 1] = newGroups[index];
@@ -448,10 +511,19 @@ function App() {
 
     // クラウド環境であれば、並び替え後の順序(order_index)を全更新する
     if (user) {
-      newGroups.forEach((g, i) => {
-        if (g.isCloud && g.id !== 'local' && !g.id.startsWith('group_')) {
-          db.updateGroup(g.id, { order_index: i }).catch(err => console.error("Order move up error:", err));
-        }
+      Promise.all(
+        newGroups.map((g, i) => (
+          g.isCloud && g.id !== 'local' && !g.id.startsWith('group_')
+            ? db.updateGroup(g.id, { order_index: i })
+            : Promise.resolve()
+        ))
+      ).catch(async (error) => {
+        await handleCloudMutationFailure({
+          error,
+          logMessage: 'Order move up error:',
+          alertMessage: 'グループ並び順の保存に失敗しました。画面をクラウドの最新状態に戻しました。',
+          rollback: () => setGroups(previousGroups),
+        });
       });
     }
   };
@@ -459,6 +531,7 @@ function App() {
   // グループを1つ下へ移動する処理
   const handleMoveGroupDown = (index) => {
     if (index === groups.length - 1) return; // すでに一番下の場合は何もしない
+    const previousGroups = groups;
     const newGroups = [...groups];
     const temp = newGroups[index + 1];
     newGroups[index + 1] = newGroups[index];
@@ -468,10 +541,19 @@ function App() {
 
     // クラウド環境であれば、並び替え後の順序(order_index)を全更新する
     if (user) {
-      newGroups.forEach((g, i) => {
-        if (g.isCloud && g.id !== 'local' && !g.id.startsWith('group_')) {
-          db.updateGroup(g.id, { order_index: i }).catch(err => console.error("Order move down error:", err));
-        }
+      Promise.all(
+        newGroups.map((g, i) => (
+          g.isCloud && g.id !== 'local' && !g.id.startsWith('group_')
+            ? db.updateGroup(g.id, { order_index: i })
+            : Promise.resolve()
+        ))
+      ).catch(async (error) => {
+        await handleCloudMutationFailure({
+          error,
+          logMessage: 'Order move down error:',
+          alertMessage: 'グループ並び順の保存に失敗しました。画面をクラウドの最新状態に戻しました。',
+          rollback: () => setGroups(previousGroups),
+        });
       });
     }
   };
@@ -492,6 +574,7 @@ function App() {
     e.preventDefault();
     if (draggedGroupIndex === null || draggedGroupIndex === dropIndex) return;
 
+    const previousGroups = groups;
     const newGroups = [...groups];
     const draggedItem = newGroups.splice(draggedGroupIndex, 1)[0];
     newGroups.splice(dropIndex, 0, draggedItem);
@@ -501,10 +584,19 @@ function App() {
 
     // クラウド環境であれば、並び替え後の順序(order_index)を全更新する
     if (user) {
-      newGroups.forEach((g, i) => {
-        if (g.isCloud && g.id !== 'local' && !g.id.startsWith('group_')) {
-          db.updateGroup(g.id, { order_index: i }).catch(err => console.error("Order move error:", err));
-        }
+      Promise.all(
+        newGroups.map((g, i) => (
+          g.isCloud && g.id !== 'local' && !g.id.startsWith('group_')
+            ? db.updateGroup(g.id, { order_index: i })
+            : Promise.resolve()
+        ))
+      ).catch(async (error) => {
+        await handleCloudMutationFailure({
+          error,
+          logMessage: 'Order move error:',
+          alertMessage: 'グループ並び順の保存に失敗しました。画面をクラウドの最新状態に戻しました。',
+          rollback: () => setGroups(previousGroups),
+        });
       });
     }
   };
@@ -550,9 +642,6 @@ function App() {
       const fallbackCatId = newCloudCatsForState.length > 0 ? newCloudCatsForState[0].id : null;
 
       const linkPromises = localLinks.map(link => {
-        // 不要な既存IDやUIフラグを分離
-        const { id, isCloud, groupId, categoryId, ...rest } = link;
-        
         // カテゴリIDの変換
         const targetCatId = catMap[link.categoryId] || fallbackCatId;
 
@@ -616,7 +705,7 @@ function App() {
         };
       });
 
-      const newLocalLinks = cloudLinks.map(link => ({
+      const newLocalLinks = sanitizeLinksForState(cloudLinks.map(link => ({
         id: `local_link_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
         title: link.title,
         url: link.url,
@@ -628,7 +717,7 @@ function App() {
         groupId: 'local',
         isCloud: false,
         createdAt: new Date().toISOString()
-      }));
+      })));
 
       // 3. ブラウザ版以外のデータ（他グループ）は残しつつ、ブラウザ版(local)だけを差し替える
       setCategories(prev => [
@@ -652,13 +741,91 @@ function App() {
 
   // インポート処理
   const handleImportData = (importedLinks, importedCategories) => {
-    setLinks(importedLinks);
-    if (importedCategories) setCategories(importedCategories);
+    let normalizedImport;
+
+    try {
+      const currentLocalCategories = categories.filter(c => (c.group_id || c.groupId || 'local') === 'local');
+      normalizedImport = normalizeImportedData({
+        importedLinks,
+        importedCategories,
+        currentLocalCategories,
+      });
+    } catch (error) {
+      if (error instanceof Error && error.message === 'NO_VALID_IMPORT_LINKS') {
+        throw new Error(language === 'en'
+          ? 'No valid links were found in the imported file.'
+          : 'インポートファイル内に有効なリンクが見つかりませんでした。');
+      }
+
+      throw new Error(language === 'en'
+        ? 'Unsupported file format.'
+        : '対応していないファイル形式です');
+    }
+
+    const { links: normalizedLinks, categories: normalizedCategories, warnings } = normalizedImport;
+
+    setLinks(prev => [
+      ...prev.filter(l => (l.group_id || l.groupId || 'local') !== 'local'),
+      ...sanitizeLinksForState(normalizedLinks),
+    ]);
+
+    if (normalizedCategories) {
+      setCategories(prev => [
+        ...prev.filter(c => (c.group_id || c.groupId || 'local') !== 'local'),
+        ...normalizedCategories,
+      ]);
+    }
+
+    setActiveGroup('local');
     setIsMenuOpen(false);
+
+    const warningLines = [];
+    if (warnings.invalidLinks > 0) {
+      warningLines.push(language === 'en'
+        ? `- Skipped invalid links: ${warnings.invalidLinks}`
+        : `- 不正なリンクを除外: ${warnings.invalidLinks}件`);
+    }
+    if (warnings.extraLinks > 0) {
+      warningLines.push(language === 'en'
+        ? `- Skipped links over the ${MAX_IMPORT_LINK_COUNT}-item limit: ${warnings.extraLinks}`
+        : `- 上限${MAX_IMPORT_LINK_COUNT}件を超えたリンクを除外: ${warnings.extraLinks}件`);
+    }
+    if (warnings.invalidCategories > 0) {
+      warningLines.push(language === 'en'
+        ? `- Skipped invalid categories: ${warnings.invalidCategories}`
+        : `- 不正なカテゴリを除外: ${warnings.invalidCategories}件`);
+    }
+    if (warnings.extraCategories > 0) {
+      warningLines.push(language === 'en'
+        ? `- Skipped categories over the 10-item limit: ${warnings.extraCategories}`
+        : `- 上限10件を超えたカテゴリを除外: ${warnings.extraCategories}件`);
+    }
+    if (warnings.truncatedStrings) {
+      warningLines.push(language === 'en'
+        ? '- Some text fields were truncated to fit length limits.'
+        : '- 一部の文字列は長さ制限に合わせて切り詰めました。');
+    }
+    if (warnings.usedDefaultCategories) {
+      warningLines.push(language === 'en'
+        ? '- Category data was missing or invalid, so default local categories were used.'
+        : '- カテゴリデータが不足または不正だったため、既定のローカルカテゴリを使用しました。');
+    }
+
+    if (warningLines.length > 0) {
+      return {
+        warningMessage: language === 'en'
+          ? `Import completed with adjustments.\n\n${warningLines.join('\n')}`
+          : `インポート時に一部データを調整しました。\n\n${warningLines.join('\n')}`,
+      };
+    }
+
+    return null;
   };
 
   // メニューからカテゴリだけを更新する専用処理
   const handleUpdateCategories = async (updatedActiveCategories) => {
+    const previousCategories = categories;
+
     setCategories(prev => {
       // クラウドデータの持つ group_id を追加して判定する
       const otherCategories = prev.filter(c => (c.group_id || c.groupId || 'local') !== activeGroup);
@@ -676,7 +843,12 @@ function App() {
           await db.updateCategory(cat.id, { name: cat.name });
         }
       } catch (error) {
-        console.error("Category update error:", error);
+        await handleCloudMutationFailure({
+          error,
+          logMessage: 'Category update error:',
+          alertMessage: 'カテゴリ更新の保存に失敗しました。画面をクラウドの最新状態に戻しました。',
+          rollback: () => setCategories(previousCategories),
+        });
       }
     }
   };
@@ -765,7 +937,7 @@ function App() {
       try {
         await db.deleteLink(id);
         setLinks(prev => prev.filter(l => l.id !== id));
-      } catch (error) {
+      } catch {
         alert("クラウドからの削除に失敗しました。");
       }
     } else {
@@ -974,13 +1146,13 @@ function App() {
 
       {/* 登録・編集用モーダル */}
       <Modal
+        key={`form-${isFormOpen ? (selectedLink?.id ?? `new-${activeGroup}`) : 'closed'}`}
         isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}
         title={selectedLink ? "リンクを編集" : "新規リンク登録"}
         contentClassName="menu-modal-content"
       >
         <LinkFormModal
-          isOpen={isFormOpen}
           onSubmit={handleSaveLink}
           initialData={selectedLink}
           allCategories={categories}
@@ -991,6 +1163,7 @@ function App() {
 
       {/* メニュー用モーダル */}
       <Modal
+        key={`menu-${isMenuOpen ? activeGroup : 'closed'}`}
         isOpen={isMenuOpen}
         onClose={() => setIsMenuOpen(false)}
         title="システムメニュー"

@@ -45,28 +45,21 @@ export const db = {
   },
 
   // 特定のグループを「メイン」に設定し、他を解除する処理
-  // SQLの制約(one_main_group_per_user)があるため、確実に1つにするための関数
+  // DB側のRPCで原子的に切り替える
   async setMainGroup(groupId) {
-    // 1. まず自分の全グループの is_main を false にする
-    await supabase.from('lm_groups').update({ is_main: false }).neq('id', groupId);
-    // 2. 指定したグループを true にする
-    const { data, error } = await supabase
-      .from('lm_groups')
-      .update({ is_main: true })
-      .eq('id', groupId)
-      .select()
-      .single();
+    const { data, error } = await supabase.rpc('lm_set_main_group', {
+      target_group_id: groupId,
+    });
+
     if (error) throw error;
     return data;
   },
 
   async deleteGroup(id) {
-    // 1. 紐づいているリンクを削除
-    await supabase.from('lm_links').delete().eq('group_id', id);
-    // 2. 紐づいているカテゴリを削除
-    await supabase.from('lm_categories').delete().eq('group_id', id);
-    // 3. グループ本体を削除
-    const { error } = await supabase.from('lm_groups').delete().eq('id', id);
+    const { error } = await supabase.rpc('lm_delete_group', {
+      target_group_id: id,
+    });
+
     if (error) throw error;
   },
 

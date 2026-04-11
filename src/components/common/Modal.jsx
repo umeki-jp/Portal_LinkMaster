@@ -6,15 +6,14 @@ function Modal({ isOpen, onClose, title, children, contentClassName = '' }) {
   const startY = useRef(0);
   const isDragging = useRef(false);
   const [translateY, setTranslateY] = useState(0);
+  const [isDraggingState, setIsDraggingState] = useState(false);
 
-  // 背景のスクロールを止める＆閉じた直後に位置をリセットする
+  // 背景のスクロールを止める
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
-      setTranslateY(0);
     } else {
       document.body.style.overflow = '';
-      setTranslateY(0);
     }
     return () => {
       document.body.style.overflow = '';
@@ -33,6 +32,7 @@ function Modal({ isOpen, onClose, title, children, contentClassName = '' }) {
     // ヘッダーやスワイプバーのエリアを触った時のみ許可する
     startY.current = e.touches[0].clientY;
     isDragging.current = true;
+    setIsDraggingState(true);
   };
 
   const handleTouchMove = (e) => {
@@ -51,6 +51,7 @@ function Modal({ isOpen, onClose, title, children, contentClassName = '' }) {
   const handleTouchEnd = () => {
     if (!isDragging.current) return;
     isDragging.current = false;
+    setIsDraggingState(false);
     
     // 120px 以上下に引っ張られたら閉じる（少し基準を緩める）
     if (translateY > 120) {
@@ -70,7 +71,7 @@ function Modal({ isOpen, onClose, title, children, contentClassName = '' }) {
         ref={contentRef}
         style={{ 
           transform: `translateY(${translateY}px)`, 
-          transition: isDragging.current ? 'none' : 'transform 0.3s ease-out' 
+          transition: isDraggingState ? 'none' : 'transform 0.3s ease-out' 
         }}
       >
         {/* ----- ドラッグ可能エリア ----- */}

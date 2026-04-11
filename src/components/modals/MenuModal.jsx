@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './MenuModal.css';
 import { getUsageData } from '../../data/usageGuide';
-import { useSettings } from '../../contexts/SettingsContext';
-import { useAuth } from '../../contexts/AuthContext';
+import { useSettings } from '../../hooks/useSettings';
+import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '../../lib/supabase';
 
 // ★ Googleログイン画像のインポート
@@ -27,7 +27,7 @@ function MenuModal({
   const [showPassword, setShowPassword] = useState(false);
 
   // --- カテゴリ編集関連のステート ---
-  const [localCategories, setLocalCategories] = useState(categories);
+  const [localCategories, setLocalCategories] = useState(() => Array.isArray(categories) ? categories.slice(0, 10) : []);
   const [saveMessage, setSaveMessage] = useState('');
 
   // 新規グループ名入力用
@@ -35,13 +35,6 @@ function MenuModal({
 
   // --- データ管理用のステート ---
   const [selectedSourceGroupId, setSelectedSourceGroupId] = useState('');
-
-  // 親データが変わったら一時保存用にも反映（★常に10件を上限とする）
-  useEffect(() => {
-    if (Array.isArray(categories)) {
-      setLocalCategories(categories.slice(0, 10));
-    }
-  }, [categories]);
 
   // --- グループ追加処理 ---
   const handleAddNewGroup = () => {
@@ -116,15 +109,26 @@ function MenuModal({
     reader.onload = (event) => {
       try {
         const parsedData = JSON.parse(event.target.result);
+        let importResult = null;
         if (Array.isArray(parsedData)) {
-          onImport(parsedData, null);
-        } else if (parsedData.links && parsedData.categories) {
-          onImport(parsedData.links, parsedData.categories);
+          importResult = onImport(parsedData, null);
+        } else if (parsedData && typeof parsedData === 'object' && Array.isArray(parsedData.links)) {
+          importResult = onImport(parsedData.links, parsedData.categories ?? null);
         } else {
-          alert('対応していないファイル形式です');
+          throw new Error(language === 'en'
+            ? 'Unsupported file format.'
+            : '対応していないファイル形式です');
+        }
+
+        if (importResult?.warningMessage) {
+          alert(importResult.warningMessage);
         }
       } catch (error) {
-        alert('ファイルの読み込みに失敗しました。正しいJSONファイルか確認してください。');
+        alert(error instanceof Error
+          ? error.message
+          : (language === 'en'
+            ? 'Failed to load the file. Please check that it is a valid JSON file.'
+            : 'ファイルの読み込みに失敗しました。正しいJSONファイルか確認してください。'));
       }
     };
     reader.readAsText(file);
@@ -288,7 +292,7 @@ function MenuModal({
               <div className="policy-links">
                 <a href="https://umeki-hub.vercel.app/policy" target="_blank" rel="noopener noreferrer">{t('termsOfService')}</a>
                 <a href="https://umeki-hub.vercel.app/privacy" target="_blank" rel="noopener noreferrer">{t('privacyPolicy')}</a>
-                <a href="https://umeki-hub.vercel.app/profile" target="_app" rel="noopener noreferrer">{t('legalNotice')}</a>
+                <a href="https://umeki-hub.vercel.app/profile" target="_blank" rel="noopener noreferrer">{t('legalNotice')}</a>
               </div>
             </section>
 

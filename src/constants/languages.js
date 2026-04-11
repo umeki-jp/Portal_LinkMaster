@@ -97,6 +97,13 @@ export const LANGUAGES = {
     cloudSyncWarning: "ログイン中はクラウドのデータでローカルデータが上書きされます。",
     copyConfirmWarning: "リンク数の少ないグループへのコピーです。本当によろしいですか？",
     deleteConfirm: "本当に削除しますか？",
+    storageRecoveryDetected: "破損したブラウザ保存データを検出したため、安全のため初期化して起動しました。元データは退避済みです。",
+    storageRecoveryBackupHint: "必要に応じて以下の退避キーを確認し、内容を手動で復旧してください。",
+    storageRecoveryLinksLabel: "リンクデータ",
+    storageRecoveryCategoriesLabel: "カテゴリ設定",
+    storageRecoveryGroupsLabel: "グループ設定",
+    storageRecoveryLanguageLabel: "言語設定",
+    storageRecoveryThemeLabel: "画面モード設定",
 
     // リンクフォーム用
     titleUrlRequired: "リンク名称とURLは必須項目です。",
@@ -213,6 +220,13 @@ export const LANGUAGES = {
     cloudSyncWarning: "Local data will be overwritten by cloud data while logged in.",
     copyConfirmWarning: "Copying to a group with fewer links. Are you sure?",
     deleteConfirm: "Are you sure you want to delete?",
+    storageRecoveryDetected: "Corrupted browser-stored data was detected, so the app started with a safe reset. The original data was backed up.",
+    storageRecoveryBackupHint: "If needed, review the backup keys below and restore the contents manually.",
+    storageRecoveryLinksLabel: "Link data",
+    storageRecoveryCategoriesLabel: "Category settings",
+    storageRecoveryGroupsLabel: "Group settings",
+    storageRecoveryLanguageLabel: "Language setting",
+    storageRecoveryThemeLabel: "Display mode setting",
 
     // Link Form
     titleUrlRequired: "Link title and URL are required.",
