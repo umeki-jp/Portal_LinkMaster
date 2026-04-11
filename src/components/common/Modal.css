@@ -43,7 +43,8 @@
 .modal-content.menu-modal-content .modal-body {
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
+  display: flex; /* ←これがないと中身の height: 100% が効かない */
+  overflow-y: hidden; /* コンテンツエリア内でスクロールさせるため、ここはhiddenにする */
 }
 
 /* タイトルと閉じるボタンの並び */

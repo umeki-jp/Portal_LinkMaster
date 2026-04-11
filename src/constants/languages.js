@@ -16,6 +16,8 @@ export const LANGUAGES = {
     detail: "詳細",
     urlCopied: "URLをコピーしました！",
     copyUrlBtn: "URLコピー",
+    expandAll: "すべて展開",
+    collapseAll: "すべて折りたたむ",
 
     // グループ・カテゴリ関連
     localGroup: "ブラウザ版",
@@ -140,6 +142,8 @@ export const LANGUAGES = {
     detail: "Detail",
     urlCopied: "URL copied!",
     copyUrlBtn: "Copy URL",
+    expandAll: "Expand All",
+    collapseAll: "Collapse All",
 
     // Groups & Categories
     localGroup: "Browser",

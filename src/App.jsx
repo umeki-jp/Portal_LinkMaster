@@ -426,14 +426,14 @@ function App() {
           return db.insertLink({
             title: l.title || '',
             url: l.url || '',
-            shortMemo: l.shortMemo || '',
-            detailMemo: l.detailMemo || '',
+            shortMemo: l.shortMemo || l.short_memo || '',
+            detailMemo: l.detailMemo || l.detail_memo || '',
             browser: l.browser || '',
             tags: l.tags || [],
-            isFavorite: !!l.isFavorite,
-            isHighlighted: !!l.isHighlighted,
-            group_id: newGroupId,    // DBと一致
-            category_id: newCatId,   // DBと一致
+            isFavorite: !!(l.isFavorite ?? l.is_favorite),
+            isHighlighted: !!(l.isHighlighted ?? l.is_highlighted),
+            group_id: newGroupId,
+            category_id: newCatId,
             order: i + 1
           });
         });
@@ -648,15 +648,15 @@ function App() {
        return db.insertLink({
           title: link.title || '',
           url: link.url || '',
-          shortMemo: link.shortMemo || '',   // DBと完全一致
-          detailMemo: link.detailMemo || '', // DBと完全一致
+          shortMemo: link.shortMemo || link.short_memo || '',
+          detailMemo: link.detailMemo || link.detail_memo || '',
           browser: link.browser || '',
-          order: link.order || 10,
+          order: link.order || link.order_index || 10,
           tags: link.tags || [],
-          isFavorite: !!link.isFavorite,     // DBと完全一致
-          isHighlighted: !!link.isHighlighted, // DBと完全一致
-          group_id: newGroupId,              // DBの "group_id" と一致
-          category_id: targetCatId           // DBの "category_id" と一致
+          isFavorite: !!(link.isFavorite ?? link.is_favorite),
+          isHighlighted: !!(link.isHighlighted ?? link.is_highlighted),
+          group_id: newGroupId,
+          category_id: targetCatId
         });
       });
 
@@ -711,8 +711,11 @@ function App() {
         url: link.url,
         shortMemo: link.short_memo || link.shortMemo,
         detailMemo: link.detail_memo || link.detailMemo,
+        browser: link.browser || '',
+        order: link.order || link.order_index || 10,
         tags: link.tags,
         isFavorite: link.is_favorite || link.isFavorite,
+        isHighlighted: link.is_highlighted || link.isHighlighted,
         categoryId: catMap[link.category_id || link.categoryId] || 'local_cat1',
         groupId: 'local',
         isCloud: false,
@@ -972,6 +975,17 @@ function App() {
 
   const favoriteLinks = filteredLinks.filter(link => link.isFavorite);
 
+  // --- アコーディオンの一括開閉制御 ---
+  const isAllClosed = activeGroupCategories.length > 0 && closedCategories.length === activeGroupCategories.length;
+
+  const handleToggleAllAccordions = () => {
+    if (isAllClosed) {
+      setClosedCategories([]); // 全て展開
+    } else {
+      setClosedCategories(activeGroupCategories.map(cat => cat.id)); // 全て折りたたみ
+    }
+  };
+
   return (
     <div className="app-container">
       <header className="app-header">
@@ -1000,7 +1014,7 @@ function App() {
 
       <main className="app-main">
         {/* =========================================
-            コントロールバー（グループタブ ＆ 検索ボタン）
+            コントロールバー（グループタブ ＆ アクション）
             ========================================= */}
         <div className="control-bar">
           <div className="group-tabs">
@@ -1022,13 +1036,24 @@ function App() {
             ))}
           </div>
 
-          <button
-            className={`search-toggle-btn ${isSearchOpen ? 'active' : ''}`}
-            onClick={() => setIsSearchOpen(!isSearchOpen)}
-            title={t('search')}
-          >
-            🔍
-          </button>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              className="search-toggle-btn"
+              onClick={handleToggleAllAccordions}
+              title={isAllClosed ? t('expandAll') : t('collapseAll')}
+              style={{ padding: '0 10px', fontSize: '18px' }}
+            >
+              {isAllClosed ? '📂' : '📁'}
+            </button>
+            <button
+              className={`search-toggle-btn ${isSearchOpen ? 'active' : ''}`}
+              onClick={() => setIsSearchOpen(!isSearchOpen)}
+              title={t('search')}
+              style={{ padding: '0 10px', fontSize: '18px' }}
+            >
+              🔍
+            </button>
+          </div>
         </div>
 
         {/* =========================================
@@ -1163,7 +1188,7 @@ function App() {
 
       {/* メニュー用モーダル */}
       <Modal
-        key={`menu-${isMenuOpen ? activeGroup : 'closed'}`}
+        key={`menu-${isMenuOpen ? 'open' : 'closed'}`}
         isOpen={isMenuOpen}
         onClose={() => setIsMenuOpen(false)}
         title="システムメニュー"

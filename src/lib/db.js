@@ -47,8 +47,10 @@ export const db = {
   // 特定のグループを「メイン」に設定し、他を解除する処理
   // DB側のRPCで原子的に切り替える
   async setMainGroup(groupId) {
-    const { data, error } = await supabase.rpc('lm_set_main_group', {
+    const { data: { user } } = await supabase.auth.getUser();
+    const { data, error } = await supabase.rpc('set_main_group_atomic', {
       target_group_id: groupId,
+      target_user_id: user?.id
     });
 
     if (error) throw error;
@@ -56,10 +58,7 @@ export const db = {
   },
 
   async deleteGroup(id) {
-    const { error } = await supabase.rpc('lm_delete_group', {
-      target_group_id: id,
-    });
-
+    const { error } = await supabase.from('lm_groups').delete().eq('id', id);
     if (error) throw error;
   },
 

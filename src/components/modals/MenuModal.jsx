@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './MenuModal.css';
 import { getUsageData } from '../../data/usageGuide';
 import { useSettings } from '../../hooks/useSettings';
@@ -29,6 +29,11 @@ function MenuModal({
   // --- カテゴリ編集関連のステート ---
   const [localCategories, setLocalCategories] = useState(() => Array.isArray(categories) ? categories.slice(0, 10) : []);
   const [saveMessage, setSaveMessage] = useState('');
+
+  // activeGroupの変更などで親から新しい categories が渡されたら同期する
+  useEffect(() => {
+    setLocalCategories(Array.isArray(categories) ? categories.slice(0, 10) : []);
+  }, [categories]);
 
   // 新規グループ名入力用
   const [newGroupName, setNewGroupName] = useState('');
@@ -426,8 +431,12 @@ function MenuModal({
                               </button>
                             )}
                             {/* 上下移動ボタン */}
-                            <button className="menu-action-btn small-btn" onClick={() => onMoveGroupUp(index)}>↑ {t('moveUp')}</button>
-                            <button className="menu-action-btn small-btn" onClick={() => onMoveGroupDown(index)}>↓ {t('moveDown')}</button>
+                            <button className="menu-action-btn small-btn" onClick={() => onMoveGroupUp(index)}>
+                              ↑<span className="hide-on-mobile"> {t('moveUp')}</span>
+                            </button>
+                            <button className="menu-action-btn small-btn" onClick={() => onMoveGroupDown(index)}>
+                              ↓<span className="hide-on-mobile"> {t('moveDown')}</span>
+                            </button>
                             <button className="menu-action-btn small-btn" onClick={() => onCopyGroup(group.id, group.name)}>{t('copyGroupBtn')}</button>
                             <button className="menu-action-btn small-btn danger-btn" onClick={() => onDeleteGroup(group.id)}>{t('deleteGroupBtn')}</button>
                           </div>

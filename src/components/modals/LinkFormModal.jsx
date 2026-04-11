@@ -124,7 +124,7 @@ function LinkFormModal({ onSubmit, initialData, allCategories, groups, activeGro
                 </div>
                 <div className="form-group" style={{ flex: 1 }}>
                     <label>{t('groupManagement') || 'グループ'}</label>
-                    <select name="groupId" value={formData.groupId} onChange={handleChange}>
+                    <select name="groupId" value={formData.groupId} onChange={handleChange} disabled={!!initialData} >
                     {groups && groups.map(g => (
                         <option key={g.id} value={g.id}>
                         {g.id === 'local' ? t('localGroup') : g.name}

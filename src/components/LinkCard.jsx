@@ -57,12 +57,12 @@ function LinkCard({ link, onDetailClick, onEditClick, onDeleteClick }) {
       {/* 展開ラッパー */}
       <div className="link-details-wrapper">
         {/* 2. 簡易メモ */}
-        <div className="col-memo">
+        <div className="col-memo" title={link.shortMemo}>
           <p className="short-memo">{link.shortMemo}</p>
         </div>
 
         {/* 3. タグ */}
-        <div className="col-tags">
+        <div className="col-tags" title={displayTags.join(', ')}>
           <div className="tags-container">
             {displayTags.map(tag => (
               <span key={tag} className="tag-badge">{tag}</span>

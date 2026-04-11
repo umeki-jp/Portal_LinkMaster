@@ -70,9 +70,9 @@
   text-overflow: ellipsis; /* 「...」にする */
 }
 
-/* 列3: タグ（15%） */
+/* 列3: タグ（20%） */
 .col-tags {
-  flex: 0 0 15%;
+  flex: 0 0 20%;
   overflow: hidden; /* はみ出し対策 */
 }
 

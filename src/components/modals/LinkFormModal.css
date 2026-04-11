@@ -2,6 +2,7 @@
   display: flex;
   flex-direction: column;
   gap: 15px;
+  padding-right: 8px; /* 右のスクロールバーとくっつかないように間隔をあける */
 }
 
 .form-group {
