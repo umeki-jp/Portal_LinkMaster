@@ -1175,7 +1175,6 @@ function App() {
         isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}
         title={selectedLink ? "リンクを編集" : "新規リンク登録"}
-        contentClassName="menu-modal-content"
       >
         <LinkFormModal
           onSubmit={handleSaveLink}
