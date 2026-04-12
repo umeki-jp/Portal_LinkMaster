@@ -452,7 +452,50 @@
 .category-edit-row {
   display: flex;
   align-items: center;
+  gap: 6px;
   margin-bottom: 10px;
+}
+
+.category-move-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.cat-move-btn {
+  background: none;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  width: 24px;
+  height: 20px;
+  font-size: 0.7rem;
+  line-height: 1;
+  cursor: pointer;
+  color: #555;
+  padding: 0;
+}
+
+.cat-move-btn:hover:not(:disabled) {
+  background-color: #e8f0fe;
+  border-color: #1a73e8;
+  color: #1a73e8;
+}
+
+.cat-move-btn:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+
+.dark-mode .cat-move-btn {
+  border-color: #555;
+  color: #aaa;
+}
+
+.dark-mode .cat-move-btn:hover:not(:disabled) {
+  background-color: #3a3a3a;
+  border-color: #e40000;
+  color: #e40000;
 }
 
 .category-edit-num {
@@ -570,4 +613,4 @@
   .usage-list li {
     font-size: 0.8rem;
   }
-}
+}

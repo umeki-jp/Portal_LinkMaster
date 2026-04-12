@@ -89,6 +89,15 @@ function MenuModal({
     await supabase.auth.signOut();
   };
 
+  // カテゴリ並び替え処理
+  const handleMoveCat = (index, direction) => {
+    const newCats = [...localCategories];
+    const swapIndex = index + direction;
+    if (swapIndex < 0 || swapIndex >= newCats.length) return;
+    [newCats[index], newCats[swapIndex]] = [newCats[swapIndex], newCats[index]];
+    setLocalCategories(newCats);
+  };
+
   // カテゴリ保存処理（5秒メッセージ付き）
   const handleSaveCategories = () => {
     // 保存時に表示順通りの order 値を付与して主画面の並び順と一致させる
@@ -516,6 +525,22 @@ function MenuModal({
                       placeholder={t('categoryNamePlaceholder')}
                       className="login-input"
                     />
+                    <div className="category-move-btns">
+                      <button
+                        type="button"
+                        className="cat-move-btn"
+                        onClick={() => handleMoveCat(index, -1)}
+                        disabled={index === 0}
+                        title={t('moveUp')}
+                      >↑</button>
+                      <button
+                        type="button"
+                        className="cat-move-btn"
+                        onClick={() => handleMoveCat(index, 1)}
+                        disabled={index === localCategories.length - 1}
+                        title={t('moveDown')}
+                      >↓</button>
+                    </div>
                   </div>
                 ))}
               </div>
