@@ -27,12 +27,16 @@ function MenuModal({
   const [showPassword, setShowPassword] = useState(false);
 
   // --- カテゴリ編集関連のステート ---
-  const [localCategories, setLocalCategories] = useState(() => Array.isArray(categories) ? categories.slice(0, 10) : []);
+  const sortCats = (cats) =>
+    Array.isArray(cats)
+      ? [...cats].sort((a, b) => (a.order || a.order_index || 0) - (b.order || b.order_index || 0)).slice(0, 10)
+      : [];
+  const [localCategories, setLocalCategories] = useState(() => sortCats(categories));
   const [saveMessage, setSaveMessage] = useState('');
 
   // activeGroupの変更などで親から新しい categories が渡されたら同期する
   useEffect(() => {
-    setLocalCategories(Array.isArray(categories) ? categories.slice(0, 10) : []);
+    setLocalCategories(sortCats(categories));
   }, [categories]);
 
   // 新規グループ名入力用
@@ -87,7 +91,9 @@ function MenuModal({
 
   // カテゴリ保存処理（5秒メッセージ付き）
   const handleSaveCategories = () => {
-    setCategories(localCategories);
+    // 保存時に表示順通りの order 値を付与して主画面の並び順と一致させる
+    const categoriesWithOrder = localCategories.map((cat, index) => ({ ...cat, order: index + 1 }));
+    setCategories(categoriesWithOrder);
     setSaveMessage(t('updateSuccess'));
     setTimeout(() => {
       setSaveMessage('');
