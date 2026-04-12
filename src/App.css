@@ -564,3 +564,46 @@ body.dark-mode {
   color: #fff;
   border-color: #e40000;
 }
+
+/* =========================================
+   トップへ戻るボタン
+   ========================================= */
+.scroll-top-btn {
+  position: fixed;
+  bottom: 70px; /* 固定フッター(約45px) + 余白 */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 990;
+
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: none;
+  background-color: rgba(26, 115, 232, 0.85);
+  color: white;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  transition: background-color 0.2s, opacity 0.2s;
+}
+
+.scroll-top-btn:hover {
+  background-color: #1557b0;
+}
+
+body.dark-mode .scroll-top-btn {
+  background-color: rgba(228, 0, 0, 0.85);
+}
+
+body.dark-mode .scroll-top-btn:hover {
+  background-color: #cc0000;
+}
+
+@media (max-width: 700px) {
+  /* スマホはフッターが static になるため、ページ末尾のフッター直上に重ならないよう
+     ビューポート下端からフッター推定高さ(約70px)＋余白分だけ上に出す */
+  .scroll-top-btn {
+    bottom: 80px;
+  }
+}

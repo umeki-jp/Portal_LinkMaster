@@ -253,6 +253,13 @@ function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [selectedSearchTags, setSelectedSearchTags] = useState([]);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setShowScrollTop(window.scrollY > 300);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const toggleSearchTag = (tag) => {
     setSelectedSearchTags(prev =>
@@ -1165,6 +1172,17 @@ function App() {
           );
         })}
       </main>
+
+      {showScrollTop && (
+        <button
+          className="scroll-top-btn"
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          title="トップへ戻る"
+          aria-label="トップへ戻る"
+        >
+          ▲
+        </button>
+      )}
 
       <footer className="app-footer">
         <div className="footer-content">
