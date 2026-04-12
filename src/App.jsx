@@ -21,6 +21,22 @@ import {
 
 const LOCAL_GROUP = { id: 'local', name: 'ブラウザ版' };
 
+const normalizeForSearch = (value = '') => {
+  return String(value)
+    .normalize('NFKC')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
+};
+
+const toTagArray = (tags) => {
+  if (Array.isArray(tags)) return tags;
+  if (typeof tags === 'string') {
+    return tags.split(',').map(tag => tag.trim()).filter(Boolean);
+  }
+  return [];
+};
+
 const getLocalLinks = () => {
   const parsedLinks = readStoredJson('portal_links', INITIAL_LINKS, isValidStoredLinks)
     .map(l => ({ ...l, isCloud: false }));
@@ -961,14 +977,16 @@ function App() {
 
   // ★検索フィルタの対象を「activeGroupLinks」に変更
   const filteredLinks = activeGroupLinks.filter(link => {
-    const query = searchQuery.toLowerCase();
+    const query = normalizeForSearch(searchQuery);
+    const normalizedTags = toTagArray(link.tags).map(tag => normalizeForSearch(tag));
+
     const matchText =
-      link.title.toLowerCase().includes(query) ||
-      (link.shortMemo || "").toLowerCase().includes(query) ||
-      (link.tags && link.tags.some(tag => tag.toLowerCase().includes(query)));
+      normalizeForSearch(link.title).includes(query) ||
+      normalizeForSearch(link.shortMemo || "").includes(query) ||
+      normalizedTags.some(tag => tag.includes(query));
 
     const matchTags = selectedSearchTags.length === 0 ||
-      selectedSearchTags.every(selectedTag => link.tags && link.tags.includes(selectedTag));
+      selectedSearchTags.every(selectedTag => normalizedTags.includes(normalizeForSearch(selectedTag)));
 
     return matchText && matchTags;
   });

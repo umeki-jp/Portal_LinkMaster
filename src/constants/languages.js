@@ -257,7 +257,6 @@ export const LANGUAGES = {
 // 全グループ共通のプリセットタグ一覧
 export const COMMON_TAGS = {
   ja: [
-    "重要",
     "毎日",
     "月曜",
     "火曜",
@@ -266,16 +265,24 @@ export const COMMON_TAGS = {
     "金曜",
     "土曜",
     "日曜",
+    "重要",
     "経理",
     "総務",
     "労務",
     "人事",
+    "税務",
     "営業",
     "開発",
-    "ｼｽﾃﾑ"
+    "ｼｽﾃﾑ",
+    "ﾒｰﾙ",
+    "ﾆｭｰｽ",
+    "情報",
+    "勉強",
+    "資格",
+    "趣味",
+    "資産",
   ],
-  en: [
-    "Important",
+  en: [   
     "Daily",
     "Mon",
     "Tue",
@@ -284,12 +291,21 @@ export const COMMON_TAGS = {
     "Fri",
     "Sat",
     "Sun",
+    "Important",
     "Accounting",
     "General",
     "Labor",
     "HR",
+    "Tax",
     "Sales",
     "Dev",
-    "System"
+    "System",
+    "Email",
+    "News",
+    "Info",
+    "Study",
+    "Certification",
+    "Hobby",
+    "Assets",
   ]
 };

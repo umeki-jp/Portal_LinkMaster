@@ -120,6 +120,21 @@ body.dark-mode .save-btn:hover {
 /* =========================================
    タグプリセット
    ========================================= */
+.preset-toggle-btn {
+  align-self: flex-start;
+  background-color: #f7f9fc;
+  border: 1px solid #c8d3e1;
+  color: #1a4f8b;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.preset-toggle-btn:hover {
+  background-color: #eaf2ff;
+}
+
 .tag-presets {
   display: flex;
   flex-wrap: wrap;
@@ -163,6 +178,16 @@ body.dark-mode .preset-tag-btn.selected {
   background-color: #e40000;
   color: white;
   border-color: #e40000;
+}
+
+body.dark-mode .preset-toggle-btn {
+  background-color: #2b3542;
+  border-color: #4a5a6d;
+  color: #d7e6ff;
+}
+
+body.dark-mode .preset-toggle-btn:hover {
+  background-color: #334152;
 }
 
 /* =========================================

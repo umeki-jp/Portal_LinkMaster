@@ -40,6 +40,7 @@ function LinkFormModal({ onSubmit, initialData, allCategories, groups, activeGro
     const { t, language } = useSettings();
     // フォームの入力項目を管理するステート
     const [formData, setFormData] = useState(() => createInitialFormData(initialData, activeGroup, allCategories));
+    const [isPresetOpen, setIsPresetOpen] = useState(false);
 
     const currentGroupId = formData.groupId || activeGroup || 'local';
     const categoryOptions = allCategories 
@@ -186,21 +187,33 @@ function LinkFormModal({ onSubmit, initialData, allCategories, groups, activeGro
 
             <div className="form-group">
                 <label>{t('tagsLabel')}</label>
-                <div className="tag-presets">
-                    {(COMMON_TAGS[language] || COMMON_TAGS.ja).map(tag => {
-                        const isSelected = formData.tags.split(',').map(t => t.trim()).includes(tag);
-                        return (
-                            <button 
-                                key={tag} 
-                                type="button" 
-                                className={`preset-tag-btn ${isSelected ? 'selected' : ''}`}
-                                onClick={() => handleToggleTag(tag)}
-                            >
-                                #{tag}
-                            </button>
-                        );
-                    })}
-                </div>
+                <button
+                    type="button"
+                    className="preset-toggle-btn"
+                    onClick={() => setIsPresetOpen(prev => !prev)}
+                    aria-expanded={isPresetOpen}
+                >
+                    {isPresetOpen
+                        ? (language === 'en' ? 'Hide Presets' : 'プリセットを閉じる')
+                        : (language === 'en' ? 'Show Presets' : 'プリセット表示')}
+                </button>
+                {isPresetOpen && (
+                    <div className="tag-presets">
+                        {(COMMON_TAGS[language] || COMMON_TAGS.ja).map(tag => {
+                            const isSelected = formData.tags.split(',').map(t => t.trim()).includes(tag);
+                            return (
+                                <button 
+                                    key={tag} 
+                                    type="button" 
+                                    className={`preset-tag-btn ${isSelected ? 'selected' : ''}`}
+                                    onClick={() => handleToggleTag(tag)}
+                                >
+                                    #{tag}
+                                </button>
+                            );
+                        })}
+                    </div>
+                )}
                 <input type="text" name="tags" value={formData.tags} onChange={handleChange} maxLength="100" placeholder={t('tagsPlaceholder')} />
             </div>
 
